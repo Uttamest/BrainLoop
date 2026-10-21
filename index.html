@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a1024" />
+  <meta name="description" content="BrainLoop is a browser-based flashcard study app with active recall, spaced repetition, and progress tracking." />
+  <title>BrainLoop — Learn it. Keep it.</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <a class="brand" href="#dashboard" aria-label="BrainLoop home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 7.5c-4.6-5.2-13-.8-12 6a7.3 7.3 0 0 0-1.8 12.3A7.4 7.4 0 0 0 16 36c2.5-.3 4.2-2.2 5-4.8.8 2.6 2.5 4.5 5 4.8a7.4 7.4 0 0 0 8.8-10.2A7.3 7.3 0 0 0 33 13.5c1-6.8-7.4-11.2-12-6Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M21 7.5v23.7M12 17c2.9.1 4.8 2 5 4.5m13-4.5c-2.9.1-4.8 2-5 4.5M13 29c3.5-2 5.4-1 8 2.2 2.6-3.2 4.5-4.2 8-2.2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+        <span>Brain<span class="brand-highlight">Loop</span><small>LEARNING STUDIO</small></span>
+      </a>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="sidebar-nav" aria-label="Main menu">
+        <a href="#dashboard" class="nav-link active" data-route="dashboard"><span class="nav-icon">◫</span> Dashboard</a>
+        <a href="#decks" class="nav-link" data-route="decks"><span class="nav-icon">▤</span> My decks <span class="nav-count" id="sidebarDeckCount">0</span></a>
+        <a href="#review" class="nav-link" data-route="review"><span class="nav-icon">◎</span> Review</a>
+      </nav>
+      <div class="sidebar-label tools-label">PREFERENCES</div>
+      <nav class="sidebar-nav" aria-label="Preferences">
+        <a href="#settings" class="nav-link" data-route="settings"><span class="nav-icon">⚙</span> Settings</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="mini-tip"><span class="mini-tip-icon">✦</span><strong>Consistency beats cramming.</strong><span>Review a little each day to build lasting recall.</span></div>
+        <a class="github-link" href="https://github.com/Uttamest/brainloop" target="_blank" rel="noopener noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>
+        <div class="side-caption">BrainLoop · Browser-only MVP</div>
+      </div>
+    </aside>
+    <div class="main-wrap">
+      <header class="topbar">
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <div class="crumb">YOUR SPACE <span>/</span> <strong id="currentCrumb">Dashboard</strong></div>
+        <div class="top-actions"><span class="data-status" title="This version saves locally in this browser"><span class="status-dot"></span> Saved locally</span><button class="button button-primary button-small" data-action="new-deck"><span>＋</span> New deck</button></div>
+      </header>
+      <main class="content" id="appContent" tabindex="-1" aria-live="polite"></main>
+      <footer class="footer"><span>© <span id="year"></span> BrainLoop · Made for curious minds</span><span>Designed & built by <a href="https://github.com/Uttamest" target="_blank" rel="noopener noreferrer">Uttam Shrestha</a></span></footer>
+    </div>
+  </div>
+  <div class="overlay" id="mobileOverlay" hidden></div>
+  <div id="modalRoot"></div>
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
+  <noscript><div class="noscript">BrainLoop needs JavaScript enabled to work. Please enable it in your browser.</div></noscript>
+</body>
+</html>
