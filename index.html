@@ -1,42 +1,66 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-  <!-- Browser and search metadata -->
-  <meta name="theme-color" content="#0a1024" />
+  <!-- Primary SEO & Application Metadata -->
+  <title>BrainLoop — Learn Smarter. Remember Longer.</title>
   <meta
     name="description"
     content="BrainLoop is your personal learning studio for smarter studying. Create flashcard decks, practice active recall, build consistent study habits, and track your learning progress."
   />
+  <meta
+    name="keywords"
+    content="BrainLoop, flashcards, spaced repetition, active recall, study tool, learning studio, exam preparation"
+  />
+  <meta name="author" content="Uttam Shrestha" />
   <meta name="application-name" content="BrainLoop" />
+  <meta name="robots" content="index, follow" />
   <meta name="color-scheme" content="light dark" />
 
-  <!-- Social sharing metadata -->
+  <!-- Adaptive Browser Theme Colors -->
+  <meta name="theme-color" content="#0a1024" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+
+  <!-- Open Graph / Social Sharing Metadata -->
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="BrainLoop" />
   <meta property="og:title" content="BrainLoop — Learn Smarter. Remember Longer." />
   <meta
     property="og:description"
     content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking."
   />
+  <meta property="og:url" content="https://uttamest.github.io/BrainLoop/" />
 
-  <title>BrainLoop — Learn Smarter. Remember Longer.</title>
+  <!-- Twitter / X Card Metadata -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="BrainLoop — Learn Smarter. Remember Longer." />
+  <meta
+    name="twitter:description"
+    content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking."
+  />
 
+  <!-- Icons & Stylesheets -->
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="preload" href="./styles.css" as="style" />
+  <link rel="preload" href="./app.js" as="script" />
   <link rel="stylesheet" href="./styles.css" />
 
+  <!-- Main Application Script -->
   <script src="./app.js" defer></script>
 </head>
 
 <body>
-  <!-- Accessibility: allow keyboard users to skip navigation -->
+  <!-- Accessibility: Skip straight to main workspace for keyboard & screen-reader users -->
   <a class="skip-link" href="#appContent">Skip to main content</a>
 
   <div class="app-shell">
 
-    <!-- Primary sidebar navigation -->
+    <!-- ==========================================
+         PRIMARY SIDEBAR NAVIGATION
+         ========================================== -->
     <aside
       class="sidebar"
       id="sidebar"
@@ -75,9 +99,9 @@
         </span>
       </a>
 
-      <div class="sidebar-label">WORKSPACE</div>
+      <div class="sidebar-label" id="workspaceNavLabel">WORKSPACE</div>
 
-      <nav class="sidebar-nav" aria-label="Main menu">
+      <nav class="sidebar-nav" aria-labelledby="workspaceNavLabel">
         <a
           href="#dashboard"
           class="nav-link active"
@@ -85,15 +109,11 @@
           aria-current="page"
         >
           <span class="nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="3.5" y="3.5" width="7" height="7" rx="1.5"
-                stroke="currentColor" stroke-width="1.7" />
-              <rect x="13.5" y="3.5" width="7" height="4" rx="1.5"
-                stroke="currentColor" stroke-width="1.7" />
-              <rect x="13.5" y="10.5" width="7" height="10" rx="1.5"
-                stroke="currentColor" stroke-width="1.7" />
-              <rect x="3.5" y="13.5" width="7" height="7" rx="1.5"
-                stroke="currentColor" stroke-width="1.7" />
+            <svg viewBox="0 0 24 24" fill="none" focusable="false">
+              <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7" />
+              <rect x="13.5" y="3.5" width="7" height="4" rx="1.5" stroke="currentColor" stroke-width="1.7" />
+              <rect x="13.5" y="10.5" width="7" height="10" rx="1.5" stroke="currentColor" stroke-width="1.7" />
+              <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7" />
             </svg>
           </span>
           <span>Dashboard</span>
@@ -105,19 +125,14 @@
           data-route="decks"
         >
           <span class="nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="3.5" width="14" height="17" rx="2"
-                stroke="currentColor" stroke-width="1.7" />
-              <path d="M8.5 8h7M8.5 12h7M8.5 16h4"
-                stroke="currentColor" stroke-width="1.7"
-                stroke-linecap="round" />
-              <path d="M3 6.5v12a2 2 0 0 0 2 2"
-                stroke="currentColor" stroke-width="1.7"
-                stroke-linecap="round" />
+            <svg viewBox="0 0 24 24" fill="none" focusable="false">
+              <rect x="5" y="3.5" width="14" height="17" rx="2" stroke="currentColor" stroke-width="1.7" />
+              <path d="M8.5 8h7M8.5 12h7M8.5 16h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+              <path d="M3 6.5v12a2 2 0 0 0 2 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
             </svg>
           </span>
           <span>My decks</span>
-          <span class="nav-count" id="sidebarDeckCount">0</span>
+          <span class="nav-count" id="sidebarDeckCount" aria-label="Total decks">0</span>
         </a>
 
         <a
@@ -126,31 +141,27 @@
           data-route="review"
         >
           <span class="nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="8.5"
-                stroke="currentColor" stroke-width="1.7" />
-              <circle cx="12" cy="12" r="4.5"
-                stroke="currentColor" stroke-width="1.7" />
-              <circle cx="12" cy="12" r="1"
-                fill="currentColor" />
+            <svg viewBox="0 0 24 24" fill="none" focusable="false">
+              <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.7" />
+              <circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.7" />
+              <circle cx="12" cy="12" r="1" fill="currentColor" />
             </svg>
           </span>
           <span>Review</span>
         </a>
       </nav>
 
-      <div class="sidebar-label tools-label">PREFERENCES</div>
+      <div class="sidebar-label tools-label" id="preferencesNavLabel">PREFERENCES</div>
 
-      <nav class="sidebar-nav" aria-label="Preferences">
+      <nav class="sidebar-nav" aria-labelledby="preferencesNavLabel">
         <a
           href="#settings"
           class="nav-link"
           data-route="settings"
         >
           <span class="nav-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="3"
-                stroke="currentColor" stroke-width="1.7" />
+            <svg viewBox="0 0 24 24" fill="none" focusable="false">
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7" />
               <path
                 d="m19.4 15 .1.1 1.1.9-1.5 2.6-1.4-.6a7.7 7.7 0 0 1-1.8 1l-.2 1.5h-3l-.3-1.5a7.7 7.7 0 0 1-1.8-1l-1.4.6-1.5-2.6 1.1-.9a7.7 7.7 0 0 1 0-2.1l-1.1-.9 1.5-2.6 1.4.6a7.7 7.7 0 0 1 1.8-1l.3-1.5h3l.2 1.5a7.7 7.7 0 0 1 1.8 1l1.4-.6 1.5 2.6-1.1.9a7.7 7.7 0 0 1 0 2.1Z"
                 transform="translate(-1 -1) scale(1.08)"
@@ -164,9 +175,9 @@
         </a>
       </nav>
 
-      <!-- Sidebar footer -->
+      <!-- Sidebar Footer -->
       <div class="sidebar-bottom">
-        <div class="mini-tip">
+        <div class="mini-tip" role="note">
           <span class="mini-tip-icon" aria-hidden="true">✦</span>
           <strong>Consistency beats cramming.</strong>
           <span>Small, regular reviews help you build lasting recall.</span>
@@ -174,7 +185,7 @@
 
         <a
           class="github-link"
-          href="https://github.com/Uttamest/brainloop"
+          href="https://github.com/uttamest/BrainLoop"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="View the BrainLoop project on GitHub (opens in a new tab)"
@@ -187,16 +198,18 @@
       </div>
     </aside>
 
-    <!-- Main application area -->
+    <!-- ==========================================
+         MAIN WORKSPACE AREA
+         ========================================== -->
     <div class="main-wrap">
 
-      <!-- Top navigation bar -->
+      <!-- Top Navigation Bar -->
       <header class="topbar">
         <button
           class="icon-button menu-toggle"
           id="menuToggle"
           type="button"
-          aria-label="Toggle navigation"
+          aria-label="Toggle navigation menu"
           aria-controls="sidebar"
           aria-expanded="false"
         >
@@ -217,16 +230,16 @@
           </svg>
         </button>
 
-        <div class="crumb" aria-label="Current location">
+        <nav class="crumb" aria-label="Breadcrumb">
           <span>YOUR SPACE</span>
           <span aria-hidden="true">/</span>
-          <strong id="currentCrumb">Dashboard</strong>
-        </div>
+          <strong id="currentCrumb" aria-current="page">Dashboard</strong>
+        </nav>
 
         <div class="top-actions">
           <span
             class="data-status"
-            title="Your study data is stored in this browser"
+            title="Your study data is stored locally in this browser"
             aria-label="Storage status: saved locally in this browser"
           >
             <span class="status-dot" aria-hidden="true"></span>
@@ -237,6 +250,7 @@
             class="button button-primary button-small"
             type="button"
             data-action="new-deck"
+            title="Create a new flashcard deck"
           >
             <span aria-hidden="true">＋</span>
             <span>New deck</span>
@@ -244,16 +258,21 @@
         </div>
       </header>
 
-      <!-- Dynamic application content -->
+      <!-- Dynamic Application Content -->
       <main
         class="content"
         id="appContent"
         tabindex="-1"
         aria-live="polite"
         aria-relevant="additions text"
-      ></main>
+      >
+        <!-- Initial loading state replaced automatically by app.js -->
+        <div class="app-loading" role="status" aria-label="Loading workspace">
+          <p>Loading your BrainLoop workspace…</p>
+        </div>
+      </main>
 
-      <!-- Application footer -->
+      <!-- Application Footer -->
       <footer class="footer">
         <span>
           © <span id="year">2026</span> BrainLoop · Made for curious minds
@@ -262,7 +281,7 @@
         <span>
           Designed &amp; built by
           <a
-            href="https://github.com/Uttamest"
+            href="https://github.com/uttamest"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Visit Uttam Shrestha's GitHub profile (opens in a new tab)"
@@ -275,7 +294,11 @@
     </div>
   </div>
 
-  <!-- Mobile navigation overlay -->
+  <!-- ==========================================
+       OVERLAYS, MODALS & NOTIFICATIONS
+       ========================================== -->
+
+  <!-- Mobile Navigation Backdrop -->
   <div
     class="overlay"
     id="mobileOverlay"
@@ -283,10 +306,10 @@
     hidden
   ></div>
 
-  <!-- Dynamic modal container -->
-  <div id="modalRoot"></div>
+  <!-- Dynamic Modal Container -->
+  <div id="modalRoot" role="region" aria-label="Modal dialogs"></div>
 
-  <!-- Accessible notification container -->
+  <!-- Accessible Toast Notification Container -->
   <div
     class="toast-container"
     id="toastContainer"
@@ -295,9 +318,9 @@
     aria-atomic="true"
   ></div>
 
-  <!-- Graceful fallback when JavaScript is disabled -->
+  <!-- Graceful Fallback When JavaScript Is Disabled -->
   <noscript>
-    <div class="noscript">
+    <div class="noscript" role="alert">
       <strong>JavaScript is required.</strong>
       Please enable JavaScript in your browser to use BrainLoop and access
       your study decks, review sessions, and learning progress.
