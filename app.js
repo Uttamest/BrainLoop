@@ -3,7 +3,7 @@
  * Local-first architecture: zero external dependencies, accounts, or cloud storage.
  *
  * @author Uttam Shrestha (https://github.com/uttamest)
- * @version 1.0.0
+ * @version 1.1.0
  */
 (() => {
   'use strict';
@@ -14,7 +14,7 @@
 
   const STORAGE_KEY = 'brainloop-v1';
   const DAY_MS = 24 * 60 * 60 * 1000;
-  const MAX_BACKUP_BYTES = 12 * 1024 * 1024; // 12 MB
+  const MAX_BACKUP_BYTES = 12 * 1024 * 1024;
   const MAX_DECKS = 2000;
   const MAX_CARDS = 100000;
 
@@ -44,42 +44,80 @@
    * Query a single DOM element.
    * @param {string} selector
    * @param {ParentNode} [root=document]
-   * @returns {HTMLElement|null}
+   * @returns {Element|null}
    */
-  const $ = (selector, root = document) => root.querySelector(selector);
+  const $ = (selector, root = document) =>
+    root.querySelector(selector);
 
   /**
-   * Query multiple DOM elements as an Array.
+   * Query multiple DOM elements.
    * @param {string} selector
    * @param {ParentNode} [root=document]
-   * @returns {HTMLElement[]}
+   * @returns {Element[]}
    */
-  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const $$ = (selector, root = document) =>
+    [...root.querySelectorAll(selector)];
 
   /**
-   * Sanitize user strings before injecting into HTML templates.
+   * Escape user-provided text before inserting it into HTML templates.
    * @param {unknown} value
    * @returns {string}
    */
   const escapeHTML = (value) =>
-    String(value ?? '').replace(/[&<>"']/g, (char) => HTML_ESCAPE_MAP[char]);
+    String(value ?? '').replace(
+      /[&<>"']/g,
+      (character) => HTML_ESCAPE_MAP[character]
+    );
 
   /**
-   * Generate a unique identifier.
+   * Generate a collision-resistant identifier.
+   * Prefer the Web Crypto API, with a compatibility fallback.
    * @returns {string}
    */
-  const uid = () =>
-    globalThis.crypto?.randomUUID?.() ||
-    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  let fallbackIdCounter = 0;
+
+  function uid() {
+    if (typeof globalThis.crypto?.randomUUID === 'function') {
+      return globalThis.crypto.randomUUID();
+    }
+
+    if (typeof globalThis.crypto?.getRandomValues === 'function') {
+      const bytes = new Uint8Array(16);
+      globalThis.crypto.getRandomValues(bytes);
+
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+      const hex = [...bytes].map((byte) =>
+        byte.toString(16).padStart(2, '0')
+      );
+
+      return [
+        hex.slice(0, 4).join(''),
+        hex.slice(4, 6).join(''),
+        hex.slice(6, 8).join(''),
+        hex.slice(8, 10).join(''),
+        hex.slice(10, 16).join('')
+      ].join('-');
+    }
+
+    fallbackIdCounter += 1;
+
+    return [
+      Date.now().toString(36),
+      fallbackIdCounter.toString(36),
+      Math.random().toString(36).slice(2, 10)
+    ].join('-');
+  }
 
   /**
-   * Get the current timestamp as an ISO-8601 string.
+   * Return the current timestamp as an ISO-8601 string.
    * @returns {string}
    */
   const nowISO = () => new Date().toISOString();
 
   /**
-   * Determine whether a flashcard is currently due for review.
+   * Determine whether a flashcard is due for review.
    * @param {Object} card
    * @param {number} [now=Date.now()]
    * @returns {boolean}
@@ -92,8 +130,8 @@
   }
 
   /**
-   * Safely focus a DOM element without unintended page scrolling.
-   * @param {HTMLElement|null} element
+   * Focus an element without unexpectedly scrolling the page.
+   * @param {Element|null} element
    */
   function focusElement(element) {
     if (!element) return;
@@ -106,12 +144,16 @@
   }
 
   /**
-   * Plain object type guard.
+   * Check whether a value is a plain object.
    * @param {unknown} value
    * @returns {boolean}
    */
   function isPlainObject(value) {
-    return value !== null && typeof value === 'object' && !Array.isArray(value);
+    return (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value)
+    );
   }
 
   /* -------------------------------------------------------------------------- */
@@ -146,16 +188,56 @@
     ];
 
     const samples = [
-      ['demo-web', 'What does HTML stand for?', 'HyperText Markup Language.'],
-      ['demo-web', 'What is CSS used for?', 'Styling and laying out web pages.'],
-      ['demo-web', 'What does the DOM represent?', 'The document as a tree of objects that scripts can read and update.'],
-      ['demo-web', 'What is a semantic HTML element?', 'An element whose name communicates its meaning, such as <main> or <article>.'],
-      ['demo-web', 'What does a JavaScript event listener do?', 'Runs a callback when a specified event occurs on a target.'],
-      ['demo-cs', 'What is a data structure?', 'A way of organizing data for efficient access and modification.'],
-      ['demo-cs', 'What is a stack?', 'A last-in, first-out (LIFO) collection.'],
-      ['demo-cs', 'What is a queue?', 'A first-in, first-out (FIFO) collection.'],
-      ['demo-cs', 'What is an algorithm?', 'A finite sequence of well-defined steps for solving a problem.'],
-      ['demo-cs', 'What is encapsulation in OOP?', 'Bundling data and behavior while controlling access to implementation details.']
+      [
+        'demo-web',
+        'What does HTML stand for?',
+        'HyperText Markup Language.'
+      ],
+      [
+        'demo-web',
+        'What is CSS used for?',
+        'Styling and laying out web pages.'
+      ],
+      [
+        'demo-web',
+        'What does the DOM represent?',
+        'The document as a tree of objects that scripts can read and update.'
+      ],
+      [
+        'demo-web',
+        'What is a semantic HTML element?',
+        'An element whose name communicates its meaning, such as <main> or <article>.'
+      ],
+      [
+        'demo-web',
+        'What does a JavaScript event listener do?',
+        'Runs a callback when a specified event occurs on a target.'
+      ],
+      [
+        'demo-cs',
+        'What is a data structure?',
+        'A way of organizing data for efficient access and modification.'
+      ],
+      [
+        'demo-cs',
+        'What is a stack?',
+        'A last-in, first-out (LIFO) collection.'
+      ],
+      [
+        'demo-cs',
+        'What is a queue?',
+        'A first-in, first-out (FIFO) collection.'
+      ],
+      [
+        'demo-cs',
+        'What is an algorithm?',
+        'A finite sequence of well-defined steps for solving a problem.'
+      ],
+      [
+        'demo-cs',
+        'What is encapsulation in OOP?',
+        'Bundling data and behavior while controlling access to implementation details.'
+      ]
     ];
 
     return {
@@ -175,8 +257,7 @@
   }
 
   /**
-   * Validate and normalize a BrainLoop data payload.
-   * Both imported JSON backups and localStorage payloads use this schema check.
+   * Validate and normalize imported or locally stored application data.
    * @param {unknown} data
    * @returns {{version: number, decks: Array, cards: Array}}
    */
@@ -190,7 +271,10 @@
       throw new Error('This is not a valid BrainLoop v1 backup.');
     }
 
-    if (data.decks.length > MAX_DECKS || data.cards.length > MAX_CARDS) {
+    if (
+      data.decks.length > MAX_DECKS ||
+      data.cards.length > MAX_CARDS
+    ) {
       throw new Error('This backup contains too much data to import.');
     }
 
@@ -206,7 +290,10 @@
         typeof deck.name !== 'string' ||
         !deck.name.trim() ||
         deck.name.length > 90 ||
-        (deck.description != null && typeof deck.description !== 'string')
+        (
+          deck.description != null &&
+          typeof deck.description !== 'string'
+        )
       ) {
         throw new Error('The backup contains invalid deck data.');
       }
@@ -222,8 +309,12 @@
       return {
         id: deck.id,
         name: deck.name.trim(),
-        description: String(deck.description ?? '').trim().slice(0, 250),
-        color: COLORS.includes(deck.color) ? deck.color : 'violet',
+        description: String(deck.description ?? '')
+          .trim()
+          .slice(0, 250),
+        color: COLORS.includes(deck.color)
+          ? deck.color
+          : 'violet',
         createdAt
       };
     });
@@ -282,11 +373,18 @@
         level: Math.min(7, Math.max(0, validLevel)),
         dueAt,
         lastReviewedAt,
-        reviews: Math.min(1000000000, Math.max(0, validReviews))
+        reviews: Math.min(
+          1000000000,
+          Math.max(0, validReviews)
+        )
       };
     });
 
-    return { version: 1, decks, cards };
+    return {
+      version: 1,
+      decks,
+      cards
+    };
   }
 
   /**
@@ -305,15 +403,22 @@
       try {
         return validateImport(JSON.parse(stored));
       } catch (error) {
-        console.warn('Unable to read saved BrainLoop data:', error);
+        console.warn(
+          'Unable to read saved BrainLoop data:',
+          error
+        );
+
         initialStorageWarning =
           'Saved data could not be read. Restore a backup if you have one.';
+
         return defaultData();
       }
     } catch (error) {
       console.warn('Browser storage is unavailable:', error);
+
       initialStorageWarning =
         'Browser storage is unavailable. Your changes may not persist after you close this page.';
+
       return defaultData();
     }
   }
@@ -322,6 +427,7 @@
   let deckSearch = '';
   let session = null;
   let lastFocus = null;
+
   const toastTimerIds = new Set();
 
   const cardsFor = (deckId) =>
@@ -334,7 +440,7 @@
     state.cards.find((card) => card.id === cardId);
 
   /**
-   * Update the topbar storage indicator.
+   * Update the application's storage status indicator.
    * @param {boolean} saved
    * @param {string} [message='']
    */
@@ -348,7 +454,7 @@
     if (label) {
       label.textContent = saved
         ? 'Saved locally'
-        : (message || 'Unsaved changes');
+        : message || 'Unsaved changes';
     }
 
     status.title = saved
@@ -369,17 +475,25 @@
   }
 
   /**
-   * Persist current state to localStorage.
+   * Persist the current application state.
    * @param {{notifyOnError?: boolean}} [options]
    * @returns {boolean}
    */
   function save({ notifyOnError = true } = {}) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(state)
+      );
+
       updateStorageStatus(true);
       return true;
     } catch (error) {
-      console.warn('BrainLoop data could not be saved:', error);
+      console.warn(
+        'BrainLoop data could not be saved:',
+        error
+      );
+
       updateStorageStatus(false);
 
       if (notifyOnError) {
@@ -392,7 +506,10 @@
     }
   }
 
-  if (initialStorageMissing && !save({ notifyOnError: false })) {
+  if (
+    initialStorageMissing &&
+    !save({ notifyOnError: false })
+  ) {
     initialStorageWarning =
       'Browser storage is unavailable. Your changes may not persist after you close this page.';
   }
@@ -431,7 +548,10 @@
    */
   function openMobile(
     open,
-    { restoreFocus = false, focusNavigation = false } = {}
+    {
+      restoreFocus = false,
+      focusNavigation = false
+    } = {}
   ) {
     const sidebar = $('#sidebar');
     const overlay = $('#mobileOverlay');
@@ -451,7 +571,7 @@
   }
 
   /**
-   * Parse the current URL hash into a structured route object.
+   * Parse the current URL hash into a structured route.
    * @returns {{page: string, id?: string}}
    */
   function route() {
@@ -470,15 +590,22 @@
       };
     }
 
-    const validPages = ['dashboard', 'decks', 'review', 'settings'];
+    const validPages = [
+      'dashboard',
+      'decks',
+      'review',
+      'settings'
+    ];
 
     return {
-      page: validPages.includes(hash) ? hash : 'dashboard'
+      page: validPages.includes(hash)
+        ? hash
+        : 'dashboard'
     };
   }
 
   /**
-   * Navigate to a hash route or re-render if already on that route.
+   * Navigate to a route or re-render the current route.
    * @param {string} hash
    */
   function navigate(hash) {
@@ -492,29 +619,40 @@
   }
 
   /**
-   * Inject view markup into `#appContent` and synchronize navigation states.
+   * Inject view markup and synchronize navigation states.
    * @param {string} html
    * @param {string} viewTitle
    */
   function setContent(html, viewTitle) {
     const content = $('#appContent');
-    if (content) content.innerHTML = html;
+
+    if (content) {
+      content.innerHTML = html;
+    }
 
     const breadcrumb = $('#currentCrumb');
-    if (breadcrumb) breadcrumb.textContent = viewTitle;
+
+    if (breadcrumb) {
+      breadcrumb.textContent = viewTitle;
+    }
 
     document.title = `${viewTitle} — BrainLoop`;
 
     const deckCount = $('#sidebarDeckCount');
+
     if (deckCount) {
       deckCount.textContent = String(state.decks.length);
     }
 
     const currentPage = route().page;
-    const activeRoute = currentPage === 'deck' ? 'decks' : currentPage;
+    const activeRoute =
+      currentPage === 'deck'
+        ? 'decks'
+        : currentPage;
 
     $$('.nav-link').forEach((link) => {
       const isActive = link.dataset.route === activeRoute;
+
       link.classList.toggle('active', isActive);
 
       if (isActive) {
@@ -534,13 +672,20 @@
    */
   function deckCard(deck) {
     const cards = cardsFor(deck.id);
-    const mastered = cards.filter((card) => card.level >= 3).length;
+    const mastered = cards.filter(
+      (card) => card.level >= 3
+    ).length;
+
     const progress = cards.length
       ? Math.round((mastered / cards.length) * 100)
       : 0;
+
     const dueCount = cards.filter(due).length;
 
-    const color = COLORS.includes(deck.color) ? deck.color : 'violet';
+    const color = COLORS.includes(deck.color)
+      ? deck.color
+      : 'violet';
+
     const safeId = escapeHTML(deck.id);
 
     return `
@@ -549,19 +694,27 @@
           <span class="deck-art ${color}" aria-hidden="true">
             ${SYMBOLS[color]}
           </span>
+
           <span class="tag">${dueCount} due now</span>
         </div>
 
         <div>
           <h3>${escapeHTML(deck.name)}</h3>
+
           <p class="deck-description">
-            ${escapeHTML(deck.description || 'Your custom learning deck.')}
+            ${escapeHTML(
+              deck.description || 'Your custom learning deck.'
+            )}
           </p>
         </div>
 
         <div>
           <div class="deck-meta">
-            <span>${cards.length} card${cards.length === 1 ? '' : 's'}</span>
+            <span>
+              ${cards.length}
+              card${cards.length === 1 ? '' : 's'}
+            </span>
+
             <span>${progress}% mastered</span>
           </div>
 
@@ -573,7 +726,10 @@
             aria-valuemax="100"
             aria-valuenow="${progress}"
           >
-            <div class="progress-fill" style="width:${progress}%"></div>
+            <div
+              class="progress-fill"
+              style="width:${progress}%"
+            ></div>
           </div>
         </div>
 
@@ -597,26 +753,33 @@
             Review due (${dueCount})
           </button>
         </div>
-      </article>`;
+      </article>
+    `;
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 5. Application Views (Dashboard, Decks, Deck Detail)                       */
+  /* 5. Application Views                                                       */
   /* -------------------------------------------------------------------------- */
 
   function dashboard() {
     const total = state.cards.length;
     const ready = state.cards.filter(due).length;
-    const mastered = state.cards.filter((card) => card.level >= 3).length;
+
+    const mastered = state.cards.filter(
+      (card) => card.level >= 3
+    ).length;
+
     const empty = state.decks.length === 0;
     const featured = state.decks.slice(0, 4);
 
     setContent(`
       <div class="welcome-title">
         <p class="eyebrow">WELCOME TO YOUR LEARNING SPACE</p>
+
         <h1 class="page-heading">
           Make learning stick<span style="color:#a99dff">.</span>
         </h1>
+
         <p class="page-lead">
           Build your knowledge, one flashcard at a time.
         </p>
@@ -653,7 +816,9 @@
             Total flashcards
             <span class="stat-icon" aria-hidden="true">▤</span>
           </div>
+
           <div class="stat-value">${total}</div>
+
           <div class="stat-sub">
             Across ${state.decks.length}
             deck${state.decks.length === 1 ? '' : 's'}
@@ -665,6 +830,7 @@
             Due for review
             <span class="stat-icon" aria-hidden="true">◷</span>
           </div>
+
           <div class="stat-value">${ready}</div>
           <div class="stat-sub">Ready when you are</div>
         </div>
@@ -674,6 +840,7 @@
             Mastered cards
             <span class="stat-icon" aria-hidden="true">✦</span>
           </div>
+
           <div class="stat-value">${mastered}</div>
           <div class="stat-sub">Reached review level 3+</div>
         </div>
@@ -682,6 +849,7 @@
       <section aria-labelledby="decksHeading">
         <div class="section-heading">
           <h2 id="decksHeading">Your study decks</h2>
+
           <button
             class="button-link"
             type="button"
@@ -710,10 +878,13 @@
     return `
       <div class="empty">
         <div class="empty-icon" aria-hidden="true">✦</div>
+
         <h3>No decks yet</h3>
+
         <p>
           Create a deck to start collecting things you want to remember.
         </p>
+
         <button
           class="button button-primary"
           type="button"
@@ -721,7 +892,8 @@
         >
           Create your first deck
         </button>
-      </div>`;
+      </div>
+    `;
   }
 
   function decksPage() {
@@ -730,6 +902,7 @@
         <div>
           <p class="eyebrow">YOUR KNOWLEDGE LIBRARY</p>
           <h1 class="page-heading">My decks</h1>
+
           <p class="page-lead">
             Keep your ideas organized in one place.
           </p>
@@ -800,7 +973,8 @@
         `
         : emptyDeck();
 
-    count.textContent = `${filtered.length} of ${state.decks.length} decks`;
+    count.textContent =
+      `${filtered.length} of ${state.decks.length} decks`;
   }
 
   function deckPage(deckId) {
@@ -812,11 +986,17 @@
     }
 
     const cards = cardsFor(deckId);
-    const color = COLORS.includes(deck.color) ? deck.color : 'violet';
+
+    const color = COLORS.includes(deck.color)
+      ? deck.color
+      : 'violet';
+
     const safeDeckId = escapeHTML(deckId);
 
     setContent(`
-      <a class="back-link" href="#decks">← Back to all decks</a>
+      <a class="back-link" href="#decks">
+        ← Back to all decks
+      </a>
 
       <div class="details-head">
         <div class="deck-art ${color}" aria-hidden="true">
@@ -825,9 +1005,13 @@
 
         <div>
           <h1>${escapeHTML(deck.name)}</h1>
+
           <p>
-            ${escapeHTML(deck.description || 'Personal study collection')}
-            · ${cards.length} flashcard${cards.length === 1 ? '' : 's'}
+            ${escapeHTML(
+              deck.description || 'Personal study collection'
+            )}
+            · ${cards.length}
+            flashcard${cards.length === 1 ? '' : 's'}
           </p>
         </div>
       </div>
@@ -929,6 +1113,7 @@
             : `
               <div class="empty">
                 <div class="empty-icon" aria-hidden="true">▤</div>
+
                 <h3>This deck is empty</h3>
                 <p>Add your first question and answer.</p>
 
@@ -959,13 +1144,16 @@
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 6. Active Recall & Spaced Repetition Review Mode                           */
+  /* 6. Active Recall & Spaced Repetition                                       */
   /* -------------------------------------------------------------------------- */
 
   function reviewPage() {
     if (session) {
-      // Remove any cards deleted after the session started.
-      while (session.queue.length && !getCard(session.queue[0])) {
+      // Remove cards that may have been deleted during the session.
+      while (
+        session.queue.length &&
+        !getCard(session.queue[0])
+      ) {
         session.queue.shift();
       }
     }
@@ -976,12 +1164,14 @@
       setContent(`
         <div class="review-wrap">
           <p class="eyebrow">ACTIVE RECALL MODE</p>
+
           <h1 class="page-heading">Review your flashcards</h1>
+
           <p class="page-lead">
             Think of the answer first, then reveal it and grade your recall.
           </p>
 
-          <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px" class="stats">
             <div class="stat">
               <div class="stat-label">Due now</div>
               <div class="stat-value">${ready}</div>
@@ -1001,6 +1191,7 @@
 
           <select class="field-select review-select" id="reviewDeck">
             <option value="all">All decks (${ready} due)</option>
+
             ${
               state.decks.map((deck) => `
                 <option value="${escapeHTML(deck.id)}">
@@ -1052,6 +1243,7 @@
         <div class="review-wrap">
           <div class="review-completed">
             <div class="big-emoji" aria-hidden="true">✦</div>
+
             <h2>Session complete!</h2>
 
             <p>
@@ -1075,7 +1267,9 @@
     }
 
     const deck = getDeck(card.deckId);
+
     const completedRatings = session.correct + session.again;
+
     const denominator = Math.max(
       session.total,
       completedRatings + session.queue.length
@@ -1083,7 +1277,9 @@
 
     const progress = Math.min(
       100,
-      Math.round((completedRatings / Math.max(1, denominator)) * 100)
+      Math.round(
+        (completedRatings / Math.max(1, denominator)) * 100
+      )
     );
 
     setContent(`
@@ -1116,7 +1312,10 @@
           aria-valuemax="100"
           aria-valuenow="${progress}"
         >
-          <div class="progress-fill" style="width:${progress}%"></div>
+          <div
+            class="progress-fill"
+            style="width:${progress}%"
+          ></div>
         </div>
 
         <button
@@ -1131,7 +1330,9 @@
           </div>
 
           <div class="study-main">
-            ${escapeHTML(session.flipped ? card.answer : card.question)}
+            ${escapeHTML(
+              session.flipped ? card.answer : card.question
+            )}
           </div>
 
           <div class="study-tap">
@@ -1187,7 +1388,11 @@
         </div>
 
         <p class="key-help">
-          Keyboard shortcuts: <kbd>Space</kbd> flip · <kbd>1</kbd> Again · <kbd>2</kbd> Good · <kbd>3</kbd> Easy
+          Keyboard shortcuts:
+          <kbd>Space</kbd> flip ·
+          <kbd>1</kbd> Again ·
+          <kbd>2</kbd> Good ·
+          <kbd>3</kbd> Easy
         </p>
       </div>
     `, 'Review');
@@ -1196,7 +1401,9 @@
   function beginReview(deckId = 'all') {
     const queue = state.cards
       .filter(
-        (card) => due(card) && (deckId === 'all' || card.deckId === deckId)
+        (card) =>
+          due(card) &&
+          (deckId === 'all' || card.deckId === deckId)
       )
       .map((card) => card.id);
 
@@ -1221,9 +1428,14 @@
     if (!session || !session.queue.length) return;
 
     const activeElement = document.activeElement;
-    const wasStudyCard = activeElement?.matches?.('.study-card');
+
+    const wasStudyCard =
+      activeElement?.matches?.('.study-card');
+
     const wasRevealButton =
-      activeElement?.matches?.('[data-action="flip"]') && !wasStudyCard;
+      activeElement?.matches?.('[data-action="flip"]') &&
+      !wasStudyCard;
+
     const wasNonInteractive = !activeElement?.matches?.(
       'button, a[href], input, textarea, select, [contenteditable="true"]'
     );
@@ -1240,7 +1452,10 @@
 
   function gradeCard(grade) {
     if (!session?.flipped || !session.queue.length) return;
-    if (!['again', 'good', 'easy'].includes(grade)) return;
+
+    if (!['again', 'good', 'easy'].includes(grade)) {
+      return;
+    }
 
     const cardId = session.queue.shift();
     const card = getCard(cardId);
@@ -1255,7 +1470,7 @@
       card.dueAt = nowISO();
       session.again += 1;
 
-      // Retry a missed card once per session to avoid infinite loops.
+      // Retry a missed card once per session to prevent infinite loops.
       if (!session.repeated[cardId]) {
         session.queue.push(cardId);
         session.repeated[cardId] = 1;
@@ -1275,39 +1490,57 @@
       session.correct += 1;
     }
 
-    card.reviews = Math.min(1000000000, (Number(card.reviews) || 0) + 1);
+    card.reviews = Math.min(
+      1000000000,
+      (Number(card.reviews) || 0) + 1
+    );
+
     card.lastReviewedAt = nowISO();
     session.flipped = false;
 
     save();
     reviewPage();
 
-    focusElement($('.study-card') || $('[data-action="finish-review"]'));
+    focusElement(
+      $('.study-card') ||
+      $('[data-action="finish-review"]')
+    );
   }
 
   /* -------------------------------------------------------------------------- */
-  /* 7. Settings & Data Management View                                         */
+  /* 7. Settings & Data Management                                              */
   /* -------------------------------------------------------------------------- */
 
   function settingsPage() {
     setContent(`
       <p class="eyebrow">OWN YOUR LEARNING DATA</p>
+
       <h1 class="page-heading">Settings &amp; data</h1>
-      <p class="page-lead">Stay in control of your study library.</p>
+
+      <p class="page-lead">
+        Stay in control of your study library.
+      </p>
 
       <section class="settings-card">
         <h2>Export a backup</h2>
+
         <p>
           Download all your decks, cards, and review progress as a JSON file.
           Keep it somewhere safe, especially before clearing browser data.
         </p>
-        <button class="button button-primary" type="button" data-action="export">
+
+        <button
+          class="button button-primary"
+          type="button"
+          data-action="export"
+        >
           ↓ Export JSON
         </button>
       </section>
 
       <section class="settings-card">
         <h2>Import a backup</h2>
+
         <p>
           Restore a previously exported BrainLoop JSON backup. Importing
           replaces the data currently stored in this browser.
@@ -1331,11 +1564,17 @@
 
       <section class="settings-card">
         <h2>Start fresh</h2>
+
         <p>
           Delete your locally saved decks and cards. This cannot be undone
           unless you've exported a backup.
         </p>
-        <button class="button button-danger" type="button" data-action="clear-all">
+
+        <button
+          class="button button-danger"
+          type="button"
+          data-action="clear-all"
+        >
           Delete all local data
         </button>
       </section>
@@ -1384,7 +1623,12 @@
   /* 8. Accessible Modal Dialogs                                                */
   /* -------------------------------------------------------------------------- */
 
-  function modal(title, fields, onSave, label = 'Save') {
+  function modal(
+    title,
+    fields,
+    onSave,
+    label = 'Save'
+  ) {
     lastFocus = document.activeElement;
 
     const root = $('#modalRoot');
@@ -1424,7 +1668,10 @@
                 Cancel
               </button>
 
-              <button class="button button-primary" type="submit">
+              <button
+                class="button button-primary"
+                type="submit"
+              >
                 ${escapeHTML(label)}
               </button>
             </div>
@@ -1435,6 +1682,7 @@
 
     const form = $('#modalForm', root);
     const dialog = $('.modal', root);
+
     const firstField = $(
       'input:not([type="hidden"]), textarea, select',
       form
@@ -1442,13 +1690,14 @@
 
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
+
       if (!form.reportValidity()) return;
 
       const data = new FormData(form);
       onSave(data);
     });
 
-    // Allow Ctrl+Enter or Cmd+Enter inside textareas to submit the form quickly
+    // Ctrl+Enter or Cmd+Enter submits a modal textarea.
     form?.addEventListener('keydown', (event) => {
       if (
         (event.ctrlKey || event.metaKey) &&
@@ -1465,7 +1714,10 @@
 
   function closeModal() {
     const root = $('#modalRoot');
-    if (root) root.innerHTML = '';
+
+    if (root) {
+      root.innerHTML = '';
+    }
 
     if (lastFocus?.isConnected) {
       focusElement(lastFocus);
@@ -1476,7 +1728,10 @@
 
   function trapModalFocus(event) {
     const dialog = $('#modalScreen .modal');
-    if (!dialog || event.key !== 'Tab') return;
+
+    if (!dialog || event.key !== 'Tab') {
+      return;
+    }
 
     const focusable = $$(
       'button:not(:disabled), [href], input:not(:disabled):not([type="hidden"]), textarea:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])',
@@ -1494,13 +1749,19 @@
 
     if (
       event.shiftKey &&
-      (document.activeElement === first || !dialog.contains(document.activeElement))
+      (
+        document.activeElement === first ||
+        !dialog.contains(document.activeElement)
+      )
     ) {
       event.preventDefault();
       focusElement(last);
     } else if (
       !event.shiftKey &&
-      (document.activeElement === last || !dialog.contains(document.activeElement))
+      (
+        document.activeElement === last ||
+        !dialog.contains(document.activeElement)
+      )
     ) {
       event.preventDefault();
       focusElement(first);
@@ -1508,14 +1769,30 @@
   }
 
   function deckForm(existingId) {
-    const existing = existingId ? getDeck(existingId) : null;
-    if (existingId && !existing) return;
+    const existing = existingId
+      ? getDeck(existingId)
+      : null;
+
+    if (existingId && !existing) {
+      return;
+    }
+
+    // Enforce the deck limit for new decks.
+    if (!existing && state.decks.length >= MAX_DECKS) {
+      toast(
+        `You can create up to ${MAX_DECKS.toLocaleString()} decks.`
+      );
+      return;
+    }
 
     modal(
       existing ? 'Edit deck' : 'Create a deck',
       `
         <div class="field-group">
-          <label class="field-label" for="deckName">Deck name</label>
+          <label class="field-label" for="deckName">
+            Deck name
+          </label>
+
           <input
             class="field-input"
             name="name"
@@ -1528,7 +1805,10 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="deckDescription">Description</label>
+          <label class="field-label" for="deckDescription">
+            Description
+          </label>
+
           <textarea
             class="field-textarea"
             name="description"
@@ -1539,8 +1819,15 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="deckColor">Theme</label>
-          <select class="field-select" name="color" id="deckColor">
+          <label class="field-label" for="deckColor">
+            Theme
+          </label>
+
+          <select
+            class="field-select"
+            name="color"
+            id="deckColor"
+          >
             ${COLORS.map(
               (color) => `
                 <option
@@ -1555,10 +1842,21 @@
         </div>
       `,
       (formData) => {
-        const name = String(formData.get('name') || '').trim();
-        const description = String(formData.get('description') || '').trim();
-        const selectedColor = String(formData.get('color') || 'violet');
-        const color = COLORS.includes(selectedColor) ? selectedColor : 'violet';
+        const name = String(
+          formData.get('name') || ''
+        ).trim();
+
+        const description = String(
+          formData.get('description') || ''
+        ).trim();
+
+        const selectedColor = String(
+          formData.get('color') || 'violet'
+        );
+
+        const color = COLORS.includes(selectedColor)
+          ? selectedColor
+          : 'violet';
 
         if (!name) {
           toast('Enter a name for this deck.');
@@ -1567,7 +1865,11 @@
         }
 
         if (existing) {
-          Object.assign(existing, { name, description, color });
+          Object.assign(existing, {
+            name,
+            description,
+            color
+          });
         } else {
           state.decks.unshift({
             id: uid(),
@@ -1579,11 +1881,16 @@
         }
 
         const saved = save();
+
         closeModal();
         render();
 
         if (saved) {
-          toast(existing ? 'Deck updated.' : 'Deck created.');
+          toast(
+            existing
+              ? 'Deck updated.'
+              : 'Deck created.'
+          );
         }
       },
       existing ? 'Save changes' : 'Create deck'
@@ -1592,9 +1899,21 @@
 
   function cardForm(deckId, cardId) {
     const deck = getDeck(deckId);
-    const existing = cardId ? getCard(cardId) : null;
+    const existing = cardId
+      ? getCard(cardId)
+      : null;
 
-    if (!deck || (cardId && !existing)) return;
+    if (!deck || (cardId && !existing)) {
+      return;
+    }
+
+    // Enforce the flashcard limit for new cards.
+    if (!existing && state.cards.length >= MAX_CARDS) {
+      toast(
+        `You can create up to ${MAX_CARDS.toLocaleString()} flashcards.`
+      );
+      return;
+    }
 
     modal(
       existing ? 'Edit flashcard' : 'Add flashcard',
@@ -1627,12 +1946,20 @@
             required
             placeholder="Write a clear, concise answer."
           >${escapeHTML(existing?.answer || '')}</textarea>
-          <span class="field-hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to save quickly.</span>
+
+          <span class="field-hint">
+            Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to save quickly.
+          </span>
         </div>
       `,
       (formData) => {
-        const question = String(formData.get('question') || '').trim();
-        const answer = String(formData.get('answer') || '').trim();
+        const question = String(
+          formData.get('question') || ''
+        ).trim();
+
+        const answer = String(
+          formData.get('answer') || ''
+        ).trim();
 
         if (!question || !answer) {
           toast('Enter both a question and an answer.');
@@ -1656,11 +1983,16 @@
         }
 
         const saved = save();
+
         closeModal();
         render();
 
         if (saved) {
-          toast(existing ? 'Flashcard updated.' : 'Flashcard added.');
+          toast(
+            existing
+              ? 'Flashcard updated.'
+              : 'Flashcard added.'
+          );
         }
       },
       existing ? 'Save changes' : 'Add flashcard'
@@ -1675,20 +2007,30 @@
     const card = getCard(cardId);
     if (!card) return;
 
-    if (!confirm('Delete this flashcard? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Delete this flashcard? This action cannot be undone.'
+      )
+    ) {
       return;
     }
 
-    state.cards = state.cards.filter((item) => item.id !== cardId);
+    state.cards = state.cards.filter(
+      (item) => item.id !== cardId
+    );
 
     if (session) {
-      session.queue = session.queue.filter((id) => id !== cardId);
+      session.queue = session.queue.filter(
+        (id) => id !== cardId
+      );
     }
 
     const saved = save();
     render();
 
-    if (saved) toast('Flashcard deleted.');
+    if (saved) {
+      toast('Flashcard deleted.');
+    }
   }
 
   function deleteDeck(deckId) {
@@ -1705,41 +2047,71 @@
       return;
     }
 
-    state.decks = state.decks.filter((item) => item.id !== deckId);
-    state.cards = state.cards.filter((card) => card.deckId !== deckId);
+    state.decks = state.decks.filter(
+      (item) => item.id !== deckId
+    );
+
+    state.cards = state.cards.filter(
+      (card) => card.deckId !== deckId
+    );
 
     if (session) {
-      session.queue = session.queue.filter((id) => getCard(id));
+      session.queue = session.queue.filter(
+        (id) => getCard(id)
+      );
     }
 
     const saved = save();
+
     navigate('#decks');
 
-    if (saved) toast('Deck deleted.');
+    if (saved) {
+      toast('Deck deleted.');
+    }
   }
 
   function exportBackup() {
-    try {
-      const blob = new Blob([JSON.stringify(state, null, 2)], {
-        type: 'application/json'
-      });
+    let url = null;
 
-      const url = URL.createObjectURL(blob);
+    try {
+      const blob = new Blob(
+        [JSON.stringify(state, null, 2)],
+        { type: 'application/json' }
+      );
+
+      url = URL.createObjectURL(blob);
+
       const link = document.createElement('a');
 
       link.href = url;
-      link.download = `brainloop-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      link.download =
+        `brainloop-backup-${new Date().toISOString().slice(0, 10)}.json`;
       link.style.display = 'none';
 
       document.body.append(link);
       link.click();
       link.remove();
 
-      window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+      window.setTimeout(() => {
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
+      }, 1500);
+
       toast('Backup downloaded.');
     } catch (error) {
-      console.error('Unable to export BrainLoop backup:', error);
-      toast('The backup could not be downloaded in this browser.');
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+
+      console.error(
+        'Unable to export BrainLoop backup:',
+        error
+      );
+
+      toast(
+        'The backup could not be downloaded in this browser.'
+      );
     }
   }
 
@@ -1748,7 +2120,10 @@
     if (!file) return;
 
     if (file.size > MAX_BACKUP_BYTES) {
-      toast('Backup file is too large. Choose a file under 12 MB.');
+      toast(
+        'Backup file is too large. Choose a file of 12 MB or smaller.'
+      );
+
       input.value = '';
       return;
     }
@@ -1768,6 +2143,7 @@
       deckSearch = '';
 
       const saved = save({ notifyOnError: false });
+
       navigate('#dashboard');
 
       if (saved) {
@@ -1778,12 +2154,15 @@
         );
       }
     } catch (error) {
-      console.warn('Unable to import BrainLoop backup:', error);
+      console.warn(
+        'Unable to import BrainLoop backup:',
+        error
+      );
 
       const message =
         error instanceof SyntaxError
           ? 'This file is not valid JSON.'
-          : (error?.message || 'Could not import the backup.');
+          : error?.message || 'Could not import the backup.';
 
       toast(message);
     } finally {
@@ -1800,14 +2179,22 @@
       return;
     }
 
-    state = { version: 1, decks: [], cards: [] };
+    state = {
+      version: 1,
+      decks: [],
+      cards: []
+    };
+
     session = null;
     deckSearch = '';
 
     const saved = save();
+
     navigate('#dashboard');
 
-    if (saved) toast('Local data cleared.');
+    if (saved) {
+      toast('Local data cleared.');
+    }
   }
 
   /* -------------------------------------------------------------------------- */
@@ -1815,7 +2202,11 @@
   /* -------------------------------------------------------------------------- */
 
   document.addEventListener('click', (event) => {
-    const eventTarget = event.target instanceof Element ? event.target : null;
+    const eventTarget =
+      event.target instanceof Element
+        ? event.target
+        : null;
+
     if (!eventTarget) return;
 
     const target = eventTarget.closest('[data-action]');
@@ -1824,6 +2215,7 @@
       if (eventTarget.id === 'modalScreen') {
         closeModal();
       }
+
       return;
     }
 
@@ -1844,7 +2236,11 @@
 
       case 'edit-card': {
         const card = getCard(id);
-        if (card) cardForm(card.deckId, id);
+
+        if (card) {
+          cardForm(card.deckId, id);
+        }
+
         break;
       }
 
@@ -1875,7 +2271,11 @@
 
       case 'begin-review': {
         const selector = $('#reviewDeck');
-        if (selector) beginReview(selector.value);
+
+        if (selector) {
+          beginReview(selector.value);
+        }
+
         break;
       }
 
@@ -1948,7 +2348,11 @@
       $('#sidebar')?.classList.contains('is-open')
     ) {
       event.preventDefault();
-      openMobile(false, { restoreFocus: true });
+
+      openMobile(false, {
+        restoreFocus: true
+      });
+
       return;
     }
 
@@ -1965,6 +2369,7 @@
     }
 
     const activeElement = document.activeElement;
+
     const isTextEntry =
       activeElement?.matches?.(
         'input, textarea, select, [contenteditable="true"]'
@@ -1973,7 +2378,9 @@
     if (isTextEntry) return;
 
     if (event.code === 'Space') {
-      if (activeElement?.matches?.('button, a[href]')) return;
+      if (activeElement?.matches?.('button, a[href]')) {
+        return;
+      }
 
       event.preventDefault();
       toggleStudyCard();
@@ -2005,30 +2412,78 @@
 
   window.addEventListener('hashchange', () => {
     render();
-    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    });
+
     focusElement($('#appContent'));
   });
 
-  // Synchronize state if modified in another browser tab
+  /**
+   * Synchronize state when another browser tab changes saved data.
+   * Invalid external data is ignored to protect the current session.
+   */
   window.addEventListener('storage', (event) => {
-    if (event.key === STORAGE_KEY && event.newValue) {
-      try {
-        state = validateImport(JSON.parse(event.newValue));
-        updateStorageStatus(true);
-        render();
-      } catch (error) {
-        console.warn('Cross-tab sync skipped due to invalid payload:', error);
-      }
+    if (event.key !== STORAGE_KEY) return;
+
+    if (
+      event.storageArea &&
+      event.storageArea !== localStorage
+    ) {
+      return;
+    }
+
+    // Another tab removed the saved application data.
+    if (event.newValue === null) {
+      state = {
+        version: 1,
+        decks: [],
+        cards: []
+      };
+
+      session = null;
+      deckSearch = '';
+
+      updateStorageStatus(
+        false,
+        'Storage was cleared in another tab'
+      );
+
+      render();
+      toast('Saved data was removed in another tab.');
+
+      return;
+    }
+
+    try {
+      state = validateImport(JSON.parse(event.newValue));
+      session = null;
+
+      updateStorageStatus(true);
+      render();
+    } catch (error) {
+      console.warn(
+        'Cross-tab synchronization skipped because the data was invalid:',
+        error
+      );
     }
   });
 
   $('#menuToggle')?.addEventListener('click', () => {
-    const isOpen = $('#sidebar')?.classList.contains('is-open');
-    openMobile(!isOpen, { focusNavigation: !isOpen });
+    const isOpen =
+      $('#sidebar')?.classList.contains('is-open');
+
+    openMobile(!isOpen, {
+      focusNavigation: !isOpen
+    });
   });
 
   $('#mobileOverlay')?.addEventListener('click', () => {
-    openMobile(false, { restoreFocus: true });
+    openMobile(false, {
+      restoreFocus: true
+    });
   });
 
   window.addEventListener('resize', () => {
@@ -2038,8 +2493,11 @@
   });
 
   const yearElement = $('#year');
+
   if (yearElement) {
-    yearElement.textContent = String(new Date().getFullYear());
+    yearElement.textContent = String(
+      new Date().getFullYear()
+    );
   }
 
   render();
