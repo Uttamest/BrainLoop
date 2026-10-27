@@ -1,364 +1,159 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="system">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <meta
-    name="theme-color"
-    content="#0a1024"
-    media="(prefers-color-scheme: dark)"
-  />
-  <meta
-    name="theme-color"
-    content="#f8fafc"
-    media="(prefers-color-scheme: light)"
-  />
-  <meta
-    name="description"
-    content="BrainLoop is your personal learning studio for smarter studying. Build flashcard decks, practice active recall, strengthen long-term memory, and track your progress."
-  />
-  <meta
-    name="keywords"
-    content="BrainLoop, flashcards, spaced repetition, active recall, study planner, learning studio, exam preparation"
-  />
+
+  <!-- Theme Colors -->
+  <meta name="theme-color" content="#0a1024" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+
+  <!-- SEO & Discovery -->
+  <title>BrainLoop — Learn Smarter. Remember Longer.</title>
+  <meta name="description" content="BrainLoop is your personal learning studio for smarter studying. Build flashcard decks, practice active recall, strengthen long-term memory, and track your progress." />
+  <meta name="keywords" content="BrainLoop, flashcards, spaced repetition, active recall, study planner, learning studio, exam preparation" />
   <meta name="author" content="Uttam Shrestha" />
   <meta name="application-name" content="BrainLoop" />
   <meta name="robots" content="index, follow" />
-  <meta
-    name="referrer"
-    content="strict-origin-when-cross-origin"
-  />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <link rel="canonical" href="https://uttamest.github.io/BrainLoop/" />
 
-  <title>BrainLoop — Learn Smarter. Remember Longer.</title>
-
-  <link
-    rel="canonical"
-    href="https://uttamest.github.io/BrainLoop/"
-  />
-
-  <!-- Social sharing metadata -->
+  <!-- Open Graph / Facebook / LinkedIn -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="BrainLoop" />
-  <meta
-    property="og:url"
-    content="https://uttamest.github.io/BrainLoop/"
-  />
-  <meta
-    property="og:title"
-    content="BrainLoop — Learn Smarter. Remember Longer."
-  />
-  <meta
-    property="og:description"
-    content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking."
-  />
+  <meta property="og:url" content="https://uttamest.github.io/BrainLoop/" />
+  <meta property="og:title" content="BrainLoop — Learn Smarter. Remember Longer." />
+  <meta property="og:description" content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking." />
   <meta property="og:locale" content="en_US" />
 
-  <!-- X (Twitter) sharing metadata -->
-  <meta name="twitter:card" content="summary" />
-  <meta
-    name="twitter:title"
-    content="BrainLoop — Learn Smarter. Remember Longer."
-  />
-  <meta
-    name="twitter:description"
-    content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking."
-  />
+  <!-- X (Twitter) Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BrainLoop — Learn Smarter. Remember Longer." />
+  <meta name="twitter:description" content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking." />
 
-  <!-- Application assets -->
-  <link
-    rel="icon"
-    type="image/svg+xml"
-    href="./favicon.svg"
-  />
-  <link
-    rel="stylesheet"
-    href="./styles.css"
-  />
-  <script
-    src="./app.js"
-    defer
-  ></script>
+  <!-- Icons & Web App Manifest -->
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="manifest" href="./site.webmanifest" />
+
+  <!-- Stylesheets & Scripts -->
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./app.js" type="module"></script>
 </head>
 
 <body>
-  <!-- Accessibility: allow keyboard users to skip navigation -->
-  <a class="skip-link" href="#appContent">
-    Skip to main content
-  </a>
+  <!-- Accessibility: Skip to main content -->
+  <a class="skip-link" href="#appContent">Skip to main content</a>
 
-  <div class="app-shell">
+  <div class="app-shell" id="appShell">
 
     <!-- =========================================================
          SIDEBAR NAVIGATION
          ========================================================= -->
-    <aside
-      class="sidebar"
-      id="sidebar"
-      aria-label="Primary navigation"
-    >
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      
       <!-- Brand -->
-      <a
-        class="brand"
-        href="#dashboard"
-        aria-label="BrainLoop home"
-      >
-        <span class="brand-mark" aria-hidden="true">
-          <svg
-            viewBox="0 0 42 42"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            focusable="false"
-            aria-hidden="true"
-          >
-            <path
-              d="M21 7.5c-4.6-5.2-13-.8-12 6a7.3 7.3 0 0 0-1.8 12.3A7.4 7.4 0 0 0 16 36c2.5-.3 4.2-2.2 5-4.8.8 2.6 2.5 4.5 5 4.8a7.4 7.4 0 0 0 8.8-10.2A7.3 7.3 0 0 0 33 13.5c1-6.8-7.4-11.2-12-6Z"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M21 7.5v23.7M12 17c2.9.1 4.8 2 5 4.5m13-4.5c-2.9.1-4.8 2-5 4.5M13 29c3.5-2 5.4-1 8 2.2 2.6-3.2 4.5-4.2 8-2.2"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-            />
+      <div class="sidebar-header">
+        <a class="brand" href="#dashboard" aria-label="BrainLoop home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+              <path d="M21 7.5c-4.6-5.2-13-.8-12 6a7.3 7.3 0 0 0-1.8 12.3A7.4 7.4 0 0 0 16 36c2.5-.3 4.2-2.2 5-4.8.8 2.6 2.5 4.5 5 4.8a7.4 7.4 0 0 0 8.8-10.2A7.3 7.3 0 0 0 33 13.5c1-6.8-7.4-11.2-12-6Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" />
+              <path d="M21 7.5v23.7M12 17c2.9.1 4.8 2 5 4.5m13-4.5c-2.9.1-4.8 2-5 4.5M13 29c3.5-2 5.4-1 8 2.2 2.6-3.2 4.5-4.2 8-2.2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </span>
+
+          <span class="brand-copy">
+            <span class="brand-name">Brain<span class="brand-highlight">Loop</span></span>
+            <small>LEARNING STUDIO</small>
+          </span>
+        </a>
+
+        <!-- Mobile close button -->
+        <button type="button" class="icon-button close-sidebar-btn" id="closeSidebarBtn" aria-label="Close sidebar navigation" hidden>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
           </svg>
-        </span>
-
-        <span class="brand-copy">
-          <span class="brand-name">
-            Brain<span class="brand-highlight">Loop</span>
-          </span>
-          <small>LEARNING STUDIO</small>
-        </span>
-      </a>
-
-      <!-- Main navigation -->
-      <div
-        class="sidebar-label"
-        id="workspaceNavLabel"
-      >
-        WORKSPACE
+        </button>
       </div>
 
-      <nav
-        class="sidebar-nav"
-        aria-labelledby="workspaceNavLabel"
-      >
-        <a
-          href="#dashboard"
-          class="nav-link active"
-          data-route="dashboard"
-          aria-current="page"
-        >
-          <span class="nav-icon" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              focusable="false"
-              aria-hidden="true"
-            >
-              <rect
-                x="3.5"
-                y="3.5"
-                width="7"
-                height="7"
-                rx="1.5"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <rect
-                x="13.5"
-                y="3.5"
-                width="7"
-                height="4"
-                rx="1.5"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <rect
-                x="13.5"
-                y="10.5"
-                width="7"
-                height="10"
-                rx="1.5"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <rect
-                x="3.5"
-                y="13.5"
-                width="7"
-                height="7"
-                rx="1.5"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-            </svg>
-          </span>
+      <!-- Navigation Links -->
+      <nav class="sidebar-content" aria-label="Workspace Links">
+        <div class="sidebar-group">
+          <span class="sidebar-label" id="workspaceNavLabel">WORKSPACE</span>
+          <ul class="nav-list" role="list">
+            <li>
+              <a href="#dashboard" class="nav-link active" data-route="dashboard" aria-current="page">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="3" width="7" height="4" rx="1.5" />
+                    <rect x="14" y="11" width="7" height="10" rx="1.5" />
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  </svg>
+                </span>
+                <span>Dashboard</span>
+              </a>
+            </li>
 
-          <span>Dashboard</span>
-        </a>
+            <li>
+              <a href="#decks" class="nav-link" data-route="decks">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="5" y="3.5" width="14" height="17" rx="2" />
+                    <path d="M8.5 8h7M8.5 12h7M8.5 16h4M3 6.5v12a2 2 0 0 0 2 2" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <span>My decks</span>
+                <span class="nav-count" id="sidebarDeckCount" aria-label="0 total decks">0</span>
+              </a>
+            </li>
 
-        <a
-          href="#decks"
-          class="nav-link"
-          data-route="decks"
-        >
-          <span class="nav-icon" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              focusable="false"
-              aria-hidden="true"
-            >
-              <rect
-                x="5"
-                y="3.5"
-                width="14"
-                height="17"
-                rx="2"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <path
-                d="M8.5 8h7M8.5 12h7M8.5 16h4"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-              />
-              <path
-                d="M3 6.5v12a2 2 0 0 0 2 2"
-                stroke="currentColor"
-                stroke-width="1.7"
-                stroke-linecap="round"
-              />
-            </svg>
-          </span>
+            <li>
+              <a href="#review" class="nav-link" data-route="review">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="8.5" />
+                    <circle cx="12" cy="12" r="4.5" />
+                    <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+                  </svg>
+                </span>
+                <span>Review</span>
+                <span class="badge-due" id="sidebarDueCount" aria-label="Cards due for review" hidden>0</span>
+              </a>
+            </li>
+          </ul>
+        </div>
 
-          <span>My decks</span>
-
-          <span
-            class="nav-count"
-            id="sidebarDeckCount"
-            aria-label="Total decks"
-          >
-            0
-          </span>
-        </a>
-
-        <a
-          href="#review"
-          class="nav-link"
-          data-route="review"
-        >
-          <span class="nav-icon" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              focusable="false"
-              aria-hidden="true"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="8.5"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <circle
-                cx="12"
-                cy="12"
-                r="4.5"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <circle
-                cx="12"
-                cy="12"
-                r="1"
-                fill="currentColor"
-              />
-            </svg>
-          </span>
-
-          <span>Review</span>
-        </a>
-      </nav>
-
-      <!-- Preferences navigation -->
-      <div
-        class="sidebar-label tools-label"
-        id="preferencesNavLabel"
-      >
-        PREFERENCES
-      </div>
-
-      <nav
-        class="sidebar-nav"
-        aria-labelledby="preferencesNavLabel"
-      >
-        <a
-          href="#settings"
-          class="nav-link"
-          data-route="settings"
-        >
-          <span class="nav-icon" aria-hidden="true">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              focusable="false"
-              aria-hidden="true"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="3"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <path
-                d="m19.4 15 .1.1 1.1.9-1.5 2.6-1.4-.6a7.7 7.7 0 0 1-1.8 1l-.2 1.5h-3l-.3-1.5a7.7 7.7 0 0 1-1.8-1l-1.4.6-1.5-2.6 1.1-.9a7.7 7.7 0 0 1 0-2.1l-1.1-.9 1.5-2.6 1.4.6a7.7 7.7 0 0 1 1.8-1l.3-1.5h3l.2 1.5a7.7 7.7 0 0 1 1.8 1l1.4-.6 1.5 2.6-1.1.9a7.7 7.7 0 0 1 0 2.1Z"
-                transform="translate(-1 -1) scale(1.08)"
-                stroke="currentColor"
-                stroke-width="1.3"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-
-          <span>Settings</span>
-        </a>
+        <div class="sidebar-group">
+          <span class="sidebar-label" id="preferencesNavLabel">PREFERENCES</span>
+          <ul class="nav-list" role="list">
+            <li>
+              <a href="#settings" class="nav-link" data-route="settings">
+                <span class="nav-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                </span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </nav>
 
       <!-- Sidebar footer -->
       <div class="sidebar-bottom">
-        <div class="mini-tip" role="note">
-          <span
-            class="mini-tip-icon"
-            aria-hidden="true"
-          >
-            ✦
-          </span>
+        <aside class="mini-tip" aria-label="Study tip">
+          <span class="mini-tip-icon" aria-hidden="true">✦</span>
+          <div>
+            <strong>Consistency beats cramming.</strong>
+            <p>Small, regular reviews help build lasting recall.</p>
+          </div>
+        </aside>
 
-          <strong>Consistency beats cramming.</strong>
-
-          <span>
-            Small, regular reviews help you build lasting recall.
-          </span>
-        </div>
-
-        <a
-          class="github-link"
-          href="https://github.com/uttamest/BrainLoop"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="View the BrainLoop project on GitHub (opens in a new tab)"
-        >
+        <a class="github-link" href="https://github.com/uttamest/BrainLoop" target="_blank" rel="noopener noreferrer">
           <span>View on GitHub</span>
           <span aria-hidden="true">↗</span>
         </a>
@@ -374,150 +169,90 @@
          ========================================================= -->
     <div class="main-wrap">
 
-      <!-- Top navigation -->
+      <!-- Topbar -->
       <header class="topbar">
-        <button
-          class="icon-button menu-toggle"
-          id="menuToggle"
-          type="button"
-          aria-label="Toggle navigation menu"
-          aria-controls="sidebar"
-          aria-expanded="false"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            focusable="false"
-            aria-hidden="true"
-          >
-            <path
-              d="M4 6h16M4 12h16M4 18h16"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
+        <div class="topbar-left">
+          <button class="icon-button menu-toggle" id="menuToggle" type="button" aria-label="Toggle navigation menu" aria-controls="sidebar" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        <!-- Current page breadcrumb -->
-        <nav
-          class="crumb"
-          aria-label="Breadcrumb"
-        >
-          <span>YOUR SPACE</span>
-          <span aria-hidden="true">/</span>
+          <!-- Current Breadcrumb -->
+          <nav class="crumb" aria-label="Breadcrumb">
+            <ol>
+              <li><span>YOUR SPACE</span></li>
+              <li aria-hidden="true">/</li>
+              <li><strong id="currentCrumb" aria-current="page">Dashboard</strong></li>
+            </ol>
+          </nav>
+        </div>
 
-          <strong
-            id="currentCrumb"
-            aria-current="page"
-          >
-            Dashboard
-          </strong>
-        </nav>
-
-        <!-- Workspace actions -->
+        <!-- Top Actions -->
         <div class="top-actions">
-          <span
-            class="data-status"
-            title="Your study data is stored locally in this browser"
-            aria-label="Storage status: saved locally in this browser"
-          >
-            <span
-              class="status-dot"
-              aria-hidden="true"
-            ></span>
-
+          <span class="data-status" title="Your study data is stored locally in this browser" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
             <span>Saved locally</span>
           </span>
 
-          <button
-            class="button button-primary button-small"
-            type="button"
-            data-action="new-deck"
-            title="Create a new flashcard deck"
-          >
+          <!-- Quick Deck Action -->
+          <button class="button button-primary button-small" type="button" id="btnNewDeck" data-action="new-deck" aria-keyshortcuts="Control+N Meta+N">
             <span aria-hidden="true">＋</span>
             <span>New deck</span>
           </button>
         </div>
       </header>
 
-      <!-- Dynamic application content -->
-      <main
-        class="content"
-        id="appContent"
-        tabindex="-1"
-        aria-live="polite"
-        aria-relevant="additions text"
-      >
-        <div
-          class="app-loading"
-          role="status"
-          aria-label="Loading workspace"
-        >
+      <!-- Main Dynamic Content -->
+      <main class="content" id="appContent" tabindex="-1">
+        <!-- Route views are injected here -->
+        <div class="app-loading" role="status" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
           <p>Loading your BrainLoop workspace…</p>
         </div>
       </main>
 
-      <!-- Application footer -->
+      <!-- Application Footer -->
       <footer class="footer">
-        <span>
-          © <span id="year">2026</span>
-          BrainLoop · Made for curious minds
-        </span>
-
+        <span>&copy; <span id="year">2026</span> BrainLoop · Made for curious minds</span>
         <span>
           Designed &amp; built by
-          <a
-            href="https://github.com/uttamest"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Visit Uttam Shrestha's GitHub profile (opens in a new tab)"
-          >
-            Uttam Shrestha
-          </a>
+          <a href="https://github.com/uttamest" target="_blank" rel="noopener noreferrer">Uttam Shrestha</a>
         </span>
       </footer>
     </div>
   </div>
 
   <!-- =========================================================
-       OVERLAYS, MODALS & NOTIFICATIONS
+       NATIVE MODALS, BACKDROP & NOTIFICATIONS
        ========================================================= -->
 
-  <!-- Mobile navigation backdrop -->
-  <div
-    class="overlay"
-    id="mobileOverlay"
-    aria-hidden="true"
-    hidden
-  ></div>
+  <!-- Backdrop for off-canvas mobile sidebar -->
+  <div class="overlay" id="mobileOverlay" aria-hidden="true" hidden></div>
 
-  <!-- Dynamic modal dialog container -->
-  <div
-    id="modalRoot"
-    role="region"
-    aria-label="Modal dialogs"
-  ></div>
+  <!-- Native HTML5 Dialog (Accessible modal by default) -->
+  <dialog id="appDialog" class="app-dialog" aria-labelledby="dialogTitle">
+    <div class="dialog-header">
+      <h2 id="dialogTitle" class="dialog-title">Modal Title</h2>
+      <button type="button" class="icon-button dialog-close" id="dialogCloseBtn" aria-label="Close dialog">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="dialog-body" id="dialogContent">
+      <!-- Dynamic Form / Content -->
+    </div>
+  </dialog>
 
-  <!-- Accessible notification container -->
-  <div
-    class="toast-container"
-    id="toastContainer"
-    role="region"
-    aria-label="Notifications"
-    aria-live="polite"
-    aria-atomic="false"
-  ></div>
+  <!-- Live Toast Region -->
+  <div class="toast-container" id="toastContainer" aria-label="Notifications" aria-live="polite"></div>
 
-  <!-- No-JavaScript fallback -->
+  <!-- Fallback when JS is disabled -->
   <noscript>
     <div class="noscript" role="alert">
       <strong>JavaScript is required.</strong>
-      Please enable JavaScript in your browser to use BrainLoop
-      and access your study decks, review sessions, and learning progress.
+      Please enable JavaScript in your browser to use BrainLoop and access your study decks, review sessions, and learning progress.
     </div>
   </noscript>
 </body>
