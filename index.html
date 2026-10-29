@@ -8,6 +8,7 @@
   <!-- Theme Colors -->
   <meta name="theme-color" content="#0a1024" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+  <meta name="msapplication-TileColor" content="#0a1024" />
 
   <!-- SEO & Discovery -->
   <title>BrainLoop — Learn Smarter. Remember Longer.</title>
@@ -19,18 +20,22 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <link rel="canonical" href="https://uttamest.github.io/BrainLoop/" />
 
-  <!-- Open Graph / Facebook / LinkedIn -->
+  <!-- Open Graph / Facebook / LinkedIn / Discord -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="BrainLoop" />
   <meta property="og:url" content="https://uttamest.github.io/BrainLoop/" />
   <meta property="og:title" content="BrainLoop — Learn Smarter. Remember Longer." />
   <meta property="og:description" content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking." />
   <meta property="og:locale" content="en_US" />
+  <meta property="og:image" content="https://uttamest.github.io/BrainLoop/og-cover.png" />
+  <meta property="og:image:alt" content="BrainLoop Learning Studio Preview" />
 
   <!-- X (Twitter) Cards -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@uttamest" />
   <meta name="twitter:title" content="BrainLoop — Learn Smarter. Remember Longer." />
   <meta name="twitter:description" content="Build better study habits with flashcards, active recall, spaced repetition, and personal progress tracking." />
+  <meta name="twitter:image" content="https://uttamest.github.io/BrainLoop/og-cover.png" />
 
   <!-- Icons & Web App Manifest -->
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
@@ -71,7 +76,7 @@
 
         <!-- Mobile close button -->
         <button type="button" class="icon-button close-sidebar-btn" id="closeSidebarBtn" aria-label="Close sidebar navigation" hidden>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12"/>
           </svg>
         </button>
@@ -85,7 +90,7 @@
             <li>
               <a href="#dashboard" class="nav-link active" data-route="dashboard" aria-current="page">
                 <span class="nav-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="7" rx="1.5" />
                     <rect x="14" y="3" width="7" height="4" rx="1.5" />
                     <rect x="14" y="11" width="7" height="10" rx="1.5" />
@@ -99,7 +104,7 @@
             <li>
               <a href="#decks" class="nav-link" data-route="decks">
                 <span class="nav-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <rect x="5" y="3.5" width="14" height="17" rx="2" />
                     <path d="M8.5 8h7M8.5 12h7M8.5 16h4M3 6.5v12a2 2 0 0 0 2 2" stroke-linecap="round" />
                   </svg>
@@ -112,7 +117,7 @@
             <li>
               <a href="#review" class="nav-link" data-route="review">
                 <span class="nav-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <circle cx="12" cy="12" r="8.5" />
                     <circle cx="12" cy="12" r="4.5" />
                     <circle cx="12" cy="12" r="1.2" fill="currentColor" />
@@ -131,7 +136,7 @@
             <li>
               <a href="#settings" class="nav-link" data-route="settings">
                 <span class="nav-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <circle cx="12" cy="12" r="3" />
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                   </svg>
@@ -173,7 +178,7 @@
       <header class="topbar">
         <div class="topbar-left">
           <button class="icon-button menu-toggle" id="menuToggle" type="button" aria-label="Toggle navigation menu" aria-controls="sidebar" aria-expanded="false">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
@@ -235,7 +240,7 @@
     <div class="dialog-header">
       <h2 id="dialogTitle" class="dialog-title">Modal Title</h2>
       <button type="button" class="icon-button dialog-close" id="dialogCloseBtn" aria-label="Close dialog">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>
       </button>
