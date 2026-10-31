@@ -1,39 +1,81 @@
-# BrainLoop Roadmap
+# 🧠 BrainLoop Roadmap
 
-This file describes **ideas for future work**, not completed functionality. Adjust the order as the product develops.
+This roadmap outlines the planned development of **BrainLoop — Learn it. Keep it.** It highlights completed functionality, upcoming improvements, and potential long-term features.
 
-## Phase 1 — Working browser MVP ✅
+The roadmap is intended to evolve as the project grows. Priorities and implementation details may change based on user feedback, technical requirements, and development progress.
 
-- [x] Create, edit, and delete decks
-- [x] Create, edit, and delete flashcards
-- [x] Study cards with flip and self-rating
-- [x] Basic interval-based review scheduling
-- [x] Browser-local progress tracking
-- [x] Export and import JSON backups
-- [x] Responsive web interface
+**Note:** Only features explicitly marked as completed are currently implemented. All unchecked items represent proposed future work.
 
-## Phase 2 — Better everyday studying (proposed)
+---
 
-- [ ] Deck import from CSV
-- [ ] Rich text, images, and code blocks in cards
-- [ ] Review history charts and optional study reminders
-- [ ] Accessible dialog focus trapping and more automated accessibility tests
-- [ ] Improved review scheduler (e.g. FSRS) and configurable goals
-- [ ] Automated UI and unit tests
+## Phase 1 — Core Browser MVP <sup>✅ Completed</sup>
 
-## Phase 3 — Accounts and synchronization (proposed)
+Establish the foundation of BrainLoop with essential flashcard creation, study, and progress-tracking functionality.
 
-- [ ] User authentication
-- [ ] Backend API and database (technology to be chosen)
-- [ ] Cloud-backed decks and review history
-- [ ] Sync between browsers and devices
-- [ ] Safe import/export and account deletion flows
+- [x] Create, edit, and delete flashcard decks
+- [x] Create, edit, and delete individual flashcards
+- [x] Study flashcards using interactive card flipping
+- [x] Rate answers based on personal recall and understanding
+- [x] Schedule reviews using a basic interval-based system
+- [x] Track learning progress locally in the browser
+- [x] Export and import decks using JSON backups
+- [x] Provide a responsive interface for desktop and mobile devices
 
-## Phase 4 — AI-assisted learning (proposed)
+## Phase 2 — Enhanced Learning Experience <sup>📋 Planned</sup>
 
-- [ ] Generate draft flashcards from pasted study notes
-- [ ] Suggest improvements to ambiguous questions
-- [ ] Review or edit AI-generated cards before saving
-- [ ] Server-side API key handling, usage limits, and privacy safeguards
+Make everyday studying more effective, flexible, and accessible.
 
-> **Never embed a private AI API key directly in browser JavaScript or publish secrets in GitHub.** GitHub Pages is static hosting; AI features involving secret keys would need a secure backend.
+- [ ] Support CSV import for faster flashcard creation
+- [ ] Add rich-text formatting, images, and code blocks to flashcards
+- [ ] Introduce review history, progress charts, and study statistics
+- [ ] Add optional study reminders and configurable daily goals
+- [ ] Improve the review scheduler, with potential support for FSRS
+- [ ] Enhance keyboard navigation, dialog focus management, and accessibility
+- [ ] Expand automated accessibility testing
+- [ ] Introduce automated unit tests and end-to-end UI tests
+
+## Phase 3 — Accounts and Cloud Synchronization <sup>🔮 Future</sup>
+
+Move beyond browser-only storage and make learning progress accessible across devices.
+
+- [ ] Implement secure user registration and authentication
+- [ ] Develop a backend API and database
+- [ ] Store decks, flashcards, and review history in the cloud
+- [ ] Synchronize learning data across browsers and devices
+- [ ] Implement reliable backup, recovery, and conflict-resolution mechanisms
+- [ ] Provide secure account deletion and data export options
+
+## Phase 4 — AI-Assisted Learning <sup>💡 Future</sup>
+
+Explore AI-powered features that help users create better flashcards and study more efficiently.
+
+- [ ] Generate draft flashcards from pasted notes or study materials
+- [ ] Identify ambiguous questions and suggest clearer wording
+- [ ] Suggest answers, explanations, and relevant examples
+- [ ] Allow users to review and edit AI-generated content before saving
+- [ ] Explore automatic organization of generated cards into relevant decks
+- [ ] Implement secure server-side API key management
+- [ ] Add usage limits, error handling, and privacy safeguards
+
+---
+
+## Development Principles
+
+As BrainLoop evolves, development should remain focused on the following principles:
+
+- **Learning first:** Prioritize features that improve active recall, knowledge retention, and consistent study habits.
+- **Simplicity:** Keep the interface intuitive and avoid unnecessary complexity.
+- **Privacy:** Give users control over their learning data and how it is stored.
+- **Accessibility:** Make the application usable across different devices and abilities.
+- **Reliability:** Prioritize data integrity, stable functionality, and thorough testing.
+- **Progressive development:** Build and validate core functionality before introducing complex features.
+
+## Security Considerations
+
+> **Never expose private API keys, database credentials, or other secrets in browser-side JavaScript or public GitHub repositories.**
+
+BrainLoop's current GitHub Pages deployment uses static hosting. Features requiring protected API credentials, authentication, or cloud storage will need a secure backend rather than exposing sensitive information in the frontend.
+
+---
+
+*BrainLoop is a continuously evolving project. This roadmap represents development goals, not guaranteed release dates or commitments.*
