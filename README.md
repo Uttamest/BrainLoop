@@ -1,91 +1,50 @@
+
 # 🧠 BrainLoop — Learn It. Keep It.
 
-**A smarter way to learn, remember, and review.**
+**A simple, smarter way to study, remember, and review.**
 
-BrainLoop is a lightweight, browser-based flashcard application designed to help learners retain knowledge through **active recall and spaced repetition**.
+BrainLoop is a lightweight, browser-based flashcard app that helps learners build stronger study habits through **active recall** and **tiered spaced repetition**.
 
-Create your own flashcards, organize them into decks, track your learning progress, and review information at gradually increasing intervals. Built with HTML, CSS, and vanilla JavaScript, BrainLoop is a frontend-only MVP that runs directly in your browser without requiring an account or installation.
+Create decks, practice with interactive flashcards, and keep track of what to review next—all without creating an account or installing software.
 
-🌐 **Live Demo:** [https://uttamest.github.io/brainloop/](https://uttamest.github.io/brainloop/) *(Available after GitHub Pages deployment is completed.)*
+Built with **HTML, CSS, and vanilla JavaScript**, BrainLoop is a frontend-only minimum viable product (MVP) that runs in a modern web browser.
 
-👨‍💻 **Developer:** [Uttam Shrestha](https://github.com/Uttamest)
+**[🌐 Live Demo (after deployment)](https://uttamest.github.io/brainloop/)** · **[🚀 Deployment Guide](GITHUB_SETUP.md)** · **[🔭 Roadmap](ROADMAP.md)**
 
----
-
-## ✨ Features
-
-### 📚 Flashcard & Deck Management
-- **Create custom decks:** Organize your learning materials by subject or topic.
-- **Manage flashcards:** Create, edit, and delete questions and answers.
-- **Search and browse:** Find decks and learning materials quickly.
-- **Sample content:** Explore two sample decks included on first use. Both can be edited or deleted.
-
-### 🧠 Interactive Study Mode
-- **Active recall:** Test your memory before revealing each answer.
-- **Self-assessment:** Rate your recall using three options: `Again`, `Good`, and `Easy`.
-- **Retry support:** Cards rated `Again` are reset and can reappear once during the current study session.
-- **Spaced review intervals:** Schedule future reviews using a tiered interval system.
-
-### 📊 Learning Progress
-- View your total number of flashcards.
-- Track cards that are due for review.
-- Monitor mastered cards and overall study progress.
-
-### 💾 Local-First Data Storage
-- Automatically save your study data using browser `localStorage`.
-- Export your data as a JSON backup.
-- Import a previously exported backup to restore your decks and cards.
-
-### 📱 Responsive Experience
-- Layouts designed for desktop and mobile screens.
-- Keyboard shortcuts for supported study actions.
-- No account registration or dependency installation required.
+> **Deployment note:** The demo link is the expected GitHub Pages URL. It should not be treated as confirmation that the site is currently live.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Key Features
 
-| Technology | Purpose |
-|---|---|
-| **HTML5** | Semantic structure and accessible navigation |
-| **CSS3** | Responsive layouts, styling, and visual design |
-| **Vanilla JavaScript** | Application logic, deck management, and review scheduling |
-| **Browser localStorage** | Persistent storage of study data in the current browser |
-| **GitHub Pages** | Static website hosting |
+| Area | What BrainLoop offers |
+| --- | --- |
+| **Deck organization** | Create custom decks, browse your collection, and search for learning material. |
+| **Flashcard management** | Add, edit, and delete question-and-answer cards. |
+| **Interactive study** | Reveal answers only after trying to recall them; then rate your memory as **Again**, **Good**, or **Easy**. |
+| **Spaced review** | Automatically schedule future reviews using progressively longer intervals. |
+| **Progress tracking** | See total cards, cards due for review, and cards counted as mastered. |
+| **Local-first storage** | Save study data in your browser with `localStorage`; export and import JSON backups. |
+| **Responsive interface** | Study on desktop or mobile, with keyboard shortcuts for supported actions. |
 
-BrainLoop intentionally uses a simple frontend architecture, making the project lightweight, easy to run, and suitable for further development.
-
-**Current scope:** This MVP does not include AI-powered flashcard generation, user accounts, cloud synchronization, or a backend server/database.
+BrainLoop includes **two editable sample decks** on first use to help new users get started.
 
 ---
 
 ## 🚀 Getting Started
 
-### Run Locally
+### Option 1: Open the app directly
 
-No package installation or build process is required.
-
-**1. Clone the repository**
+No package manager, dependencies, or build step is required.
 
 ```bash
 git clone https://github.com/Uttamest/brainloop.git
-```
-
-**2. Open the project folder**
-
-```bash
 cd brainloop
 ```
 
-**3. Launch the application**
-
 Open `index.html` in a modern web browser.
 
-You can now create a deck, add flashcards, and start studying using the **Review** feature.
-
-### Run with a Local Web Server
-
-Alternatively, use Python's built-in HTTP server.
+### Option 2: Run a local web server
 
 From the project directory, run:
 
@@ -93,29 +52,219 @@ From the project directory, run:
 python -m http.server 5500
 ```
 
-Then open the following address in your browser:
+Then visit **http://localhost:5500**.
 
-[http://localhost:5500](http://localhost:5500)
+### Your First Study Session
+
+1. **Create a deck** for a subject or topic, or explore a sample deck.
+2. **Add flashcards** with a question on the front and an answer on the back.
+3. **Start a review**, think of the answer, and reveal the card.
+4. **Rate your recall** using **Again**, **Good**, or **Easy**.
+5. **Return to review** cards when they become due.
 
 ---
 
-## 🌍 Deploy with GitHub Pages
+## 🧠 How Spaced Repetition Works
 
-Follow these steps to publish BrainLoop as a static website.
+BrainLoop uses a straightforward, level-based review scheduler.
 
-**1. Create a GitHub repository**
+Every new card begins at **Level 0** and is available for immediate review.
 
-Create a public repository named `brainloop` under your GitHub account, [Uttamest](https://github.com/Uttamest). Skip this step if the repository already exists.
+### Review Ratings
 
-**2. Upload the project files**
+| Rating | What happens |
+| --- | --- |
+| **Again** | Resets the card to Level 0, makes it due immediately, and permits one retry within the current study session. |
+| **Good** | Advances the card by one level and schedules a future review. |
+| **Easy** | Advances the card by two levels and schedules a later review. |
 
-Upload the project files directly to the repository's root directory. Ensure that `index.html` is located at the root.
+### Review Intervals
 
-**3. Open repository settings**
+The scheduler uses these review intervals:
 
-Navigate to **Settings → Pages**.
+**1 → 3 → 7 → 14 → 30 → 60 → 120 days**
 
-**4. Configure the deployment source**
+Cards at **Level 3 or above** are counted as *mastered* in the progress dashboard.
+
+> **Important:** This is a simple tiered scheduling system for the MVP, **not** a validated adaptive algorithm such as SM-2 or FSRS.
+
+---
+
+## 👥 Project Team & Proposed Task Allocation
+
+BrainLoop is presented here as a collaborative project developed by a four-member team.
+
+The assignments below are **proposed responsibilities** for organizing teamwork, not a verified record of completed individual contributions.
+
+### 1. SHRESTHA UTTAM
+**Role: Project Lead & Core Developer**
+
+**Responsibilities:**
+- Plan the project scope, goals, and development milestones.
+- Organize the overall application architecture.
+- Develop the core JavaScript application logic.
+- Implement interactive flashcard study sessions.
+- Develop the tiered spaced-repetition scheduling system.
+- Integrate features developed by team members.
+- Manage the GitHub repository and project integration.
+- Configure and manage GitHub Pages deployment.
+
+**Primary Focus:** Project management, core functionality, feature integration, and deployment.
+
+### 2. THAPA MANISHA
+**Role: UI/UX Designer & Frontend Developer**
+
+**Responsibilities:**
+- Design the overall user interface and experience.
+- Create visually organized deck and flashcard layouts.
+- Develop responsive styling using CSS3.
+- Design interactive buttons, cards, forms, and navigation.
+- Improve usability, readability, and visual consistency.
+- Optimize the interface for desktop and mobile devices.
+- Improve accessibility and user interaction feedback.
+- Collaborate with the core developer to integrate frontend designs.
+
+**Primary Focus:** User interface, user experience, responsive design, and frontend styling.
+
+### 3. B K SURAJ
+**Role: Feature Developer & Data Management**
+
+**Responsibilities:**
+- Develop flashcard creation, editing, and deletion features.
+- Implement deck creation and management functionality.
+- Develop search and browsing functionality.
+- Implement browser `localStorage` integration.
+- Manage flashcard data persistence and retrieval.
+- Implement JSON backup export and import features.
+- Validate flashcard and deck data handling.
+- Test data management features and resolve functional issues.
+
+**Primary Focus:** Flashcard management, browser storage, and data-handling functionality.
+
+### 4. KHAND THAKURI SHRADDHA
+**Role: Quality Assurance, Testing & Documentation**
+
+**Responsibilities:**
+- Prepare and review sample flashcard content.
+- Test deck creation, editing, and deletion workflows.
+- Test flashcard review sessions and rating functionality.
+- Verify spaced-repetition scheduling behavior.
+- Test backup export and restoration processes.
+- Check application behavior on different screen sizes.
+- Identify bugs and document testing results.
+- Maintain project documentation and user instructions.
+- Assist with final project verification before deployment.
+
+**Primary Focus:** Testing, quality assurance, sample content, and documentation.
+
+### Team Responsibilities Summary
+
+| Team Member | Assigned Role | Main Focus |
+| --- | --- | --- |
+| **SHRESTHA UTTAM** | Project Lead & Core Developer | Architecture, study logic, scheduling, integration, deployment |
+| **THAPA MANISHA** | UI/UX & Frontend Developer | UI design, CSS, responsiveness, accessibility |
+| **B K SURAJ** | Feature & Data Developer | Deck management, flashcards, search, localStorage, backups |
+| **KHAND THAKURI SHRADDHA** | QA & Documentation | Testing, bug reporting, sample content, documentation |
+
+### 🤝 Team Collaboration Workflow
+
+To maintain an organized development process, the team follows this proposed workflow:
+
+1. **Planning:** Discuss requirements, define features, and assign responsibilities.
+2. **Development:** Implement assigned tasks using separate Git branches or clearly assigned files.
+3. **Code Review:** Review changes and test functionality before merging into the main branch.
+4. **Testing:** Verify flashcards, review scheduling, saved data, and responsive layouts.
+5. **Deployment:** Publish the reviewed application through GitHub Pages.
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+| --- | --- |
+| **HTML5** | Application structure and semantic markup |
+| **CSS3** | Layout, styling, and responsive design |
+| **Vanilla JavaScript** | App logic, flashcard interactions, and review scheduling |
+| **Browser `localStorage`** | Device/browser-local persistence |
+| **GitHub Pages** | Static website hosting |
+
+### Application Architecture
+
+BrainLoop uses a lightweight frontend-only architecture.
+
+**Current MVP:**
+- No backend server.
+- No cloud database.
+- No user authentication.
+- No external framework dependency.
+- No AI-powered flashcard generation.
+- No cross-device synchronization.
+
+This architecture allows the application to run as a static website without requiring server-side infrastructure.
+
+---
+
+## 📁 Project Structure
+
+```text
+brainloop/
+├── index.html       # Main application markup
+├── styles.css       # Design and responsive styling
+├── app.js           # Flashcards, study sessions, and data logic
+├── favicon.svg      # Browser tab icon
+├── .gitignore       # Git ignore rules
+├── .nojekyll        # Disable Jekyll processing on GitHub Pages
+├── README.md        # Project overview and setup
+├── ROADMAP.md       # Planned enhancements
+└── GITHUB_SETUP.md  # Deployment instructions
+```
+
+---
+
+## 💾 Storage, Backups & Privacy
+
+BrainLoop stores study data using your browser's **`localStorage`**.
+
+In the current MVP:
+
+- Data is **not synchronized** between browsers or devices.
+- Clearing the site's browser storage can **permanently delete** saved decks and progress.
+- Private/incognito sessions may not retain data after the session ends.
+- Changing devices or browsers requires **manual backup and restoration**.
+
+### Export a Backup
+
+Use **Settings → Export a backup** to save a JSON copy of your data.
+
+### Restore a Backup
+
+Use the app's import feature to load a previously exported JSON file.
+
+> **Warning:** Importing a backup **replaces** existing app data; it does not merge decks. Export your current data before importing another backup.
+
+---
+
+## 🌍 Deploy to GitHub Pages
+
+Follow these steps to publish BrainLoop online.
+
+### Step 1: Create a Repository
+
+Create a public repository named **`brainloop`** under the GitHub account [Uttamest](https://github.com/Uttamest), if one does not already exist.
+
+### Step 2: Upload Project Files
+
+Upload the application files to the repository.
+
+Ensure that **`index.html` is located at the repository root**.
+
+### Step 3: Open GitHub Pages Settings
+
+Navigate to:
+
+**Repository → Settings → Pages**
+
+### Step 4: Configure Deployment
 
 Under **Build and deployment**, select:
 
@@ -125,128 +274,68 @@ Under **Build and deployment**, select:
 
 Click **Save**.
 
-**5. Wait for deployment to complete**
+### Step 5: Verify Deployment
 
-GitHub Pages will publish the static website after the deployment process finishes.
+Once GitHub Pages finishes deploying the project, the expected website URL is:
 
-**6. Visit the website**
+**https://uttamest.github.io/brainloop/**
 
-Your expected website address is:
+For more details, see **[GITHUB_SETUP.md](GITHUB_SETUP.md)**.
 
-[https://uttamest.github.io/brainloop/](https://uttamest.github.io/brainloop/)
-
-*Note: This is the intended deployment URL, not confirmation that the website is currently live.*
-
-For additional instructions, see [`GITHUB_SETUP.md`](GITHUB_SETUP.md).
+> GitHub Pages hosts static files. It does not run a Python/FastAPI backend or host an application database; those would require separate services.
 
 ---
 
-## 📁 Project Structure
+## 🔭 Future Roadmap
 
-```text
-brainloop/
-├── index.html        # Main application structure
-├── styles.css        # Styling, layout, and responsive design
-├── app.js            # Application logic and study functionality
-├── favicon.svg       # Browser tab icon
-├── .gitignore        # Files excluded from version control
-├── .nojekyll         # Disables Jekyll processing on GitHub Pages
-├── README.md         # Project documentation
-├── ROADMAP.md        # Planned improvements and future features
-└── GITHUB_SETUP.md   # GitHub Pages deployment instructions
-```
+BrainLoop is an initial MVP designed with opportunities for future development.
 
----
+### Potential Improvements
 
-## 🧠 How Spaced Repetition Works
+- **AI-assisted flashcard generation:** Create flashcards from notes, documents, and study materials.
+- **User authentication:** Support personalized user accounts and study profiles.
+- **Cloud synchronization:** Access flashcards and progress from multiple devices.
+- **Advanced spaced repetition:** Explore adaptive scheduling methods.
+- **Learning analytics:** Provide more detailed statistics and study performance insights.
+- **Study customization:** Introduce additional learning tools and personalization options.
 
-BrainLoop uses a basic, tiered review system to help learners revisit flashcards over progressively longer intervals.
+These are **planned ideas, not implemented features**.
 
-Each card starts at **Level 0** and is ready for review immediately.
-
-### Review Ratings
-
-| Rating | Behavior |
-|---|---|
-| **Again** | Resets the card to Level 0, makes it due immediately, and allows one retry in the current session. |
-| **Good** | Advances the card by one level and schedules its next review. |
-| **Easy** | Advances the card by two levels and schedules a review further into the future. |
-
-### Review Intervals
-
-The application uses the following interval sequence:
-
-**1 → 3 → 7 → 14 → 30 → 60 → 120 days**
-
-Cards at **Level 3 or higher** count as mastered in the progress dashboard.
-
-This is a deliberately simple, tiered scheduling approach intended for the initial MVP. It is **not a validated adaptive algorithm** such as SM-2 or FSRS.
+See **[ROADMAP.md](ROADMAP.md)** for the longer-term plan.
 
 ---
 
-## 🔒 Data Storage, Privacy & Limitations
+## 📬 Project Contact
 
-BrainLoop stores study data locally in your browser using `localStorage`.
+### SHRESTHA UTTAM
 
-This means:
-
-- Your study data is not automatically synchronized across devices.
-- There is no user account or cloud database in the current version.
-- Clearing browser storage or site data may permanently remove saved progress.
-- Private browsing sessions may not retain data after the session ends.
-- Switching browsers or devices does not automatically transfer your decks.
-
-### Back Up Your Data
-
-To protect your progress, use **Settings → Export a backup** to download a JSON copy of your study data.
-
-When restoring data, be aware that **importing a backup replaces the current data rather than merging with it**. Export your current data before importing another backup if you need to preserve it.
-
-### Hosting Limitation
-
-GitHub Pages supports static website hosting. It does not run a Python/FastAPI backend or provide a database for this application. Backend functionality would require a separate hosting service.
-
----
-
-## 🔭 Roadmap
-
-BrainLoop is an initial working MVP with room to grow.
-
-Potential future improvements include:
-
-- **AI-assisted flashcard creation** from notes, documents, or study materials.
-- **User authentication** and personalized study profiles.
-- **Cloud synchronization** across multiple devices.
-- **Improved scheduling algorithms** for more adaptive review sessions.
-- **Study analytics** and more detailed learning insights.
-- **Enhanced learning tools** and additional customization options.
-
-See [`ROADMAP.md`](ROADMAP.md) for more details.
-
-*These are proposed improvements, not features currently implemented in this version.*
-
----
-
-## 👨‍💻 Author
-
-**Uttam Shrestha**
-
-Developer and creator of BrainLoop.
+**Project Creator & Repository Contact**
 
 - **GitHub:** [github.com/Uttamest](https://github.com/Uttamest)
 - **LinkedIn:** [linkedin.com/in/mruttam](https://www.linkedin.com/in/mruttam/)
 - **Email:** [uttamnitro5@gmail.com](mailto:uttamnitro5@gmail.com)
 
+### Project Team
+
+- **SHRESTHA UTTAM**
+- **THAPA MANISHA**
+- **B K SURAJ**
+- **KHAND THAKURI SHRADDHA**
+
 ---
 
 ## 📄 License
 
-No open-source license has been selected for this repository yet.
+No open-source license has been selected for this repository.
 
-Until a license is added, the project should not be assumed to grant permission to reuse, modify, or redistribute its code. A `LICENSE` file can be added once the repository owner decides the terms under which the project will be shared.
+Until a license is added, do not assume permission to reuse, modify, or redistribute the project's code.
+
+A `LICENSE` file can be added once the repository owner chooses the terms.
 
 ---
 
-**BrainLoop — Learn it. Keep it.**
-
-Build better study habits, one flashcard at a time.
+<p align="center">
+  <strong>🧠 BrainLoop — Learn It. Keep It.</strong>
+  <br>
+  Build better study habits, one flashcard at a time.
+</p>
