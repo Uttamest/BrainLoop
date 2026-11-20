@@ -1,0 +1,14 @@
+Options -Indexes
+DirectoryIndex index.php
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+RewriteEngine On
+# The full project is in htdocs, so only its front controller and assets are public.
+RewriteRule ^(?:app|database|docs|scripts|storage|tests|public|\.github)(?:/|$) - [F,END,NC]
+RewriteRule ^(?:README\.md|CONTRIBUTING\.md|SECURITY\.md|LICENSE)$ - [F,END,NC]
+RewriteRule ^assets/(.+\.(?:css|svg|png|jpe?g|webp|ico))$ public/assets/$1 [END,NC]
+RewriteRule ^index\.php$ - [END]
+RewriteRule ^ index.php [END,QSA]
