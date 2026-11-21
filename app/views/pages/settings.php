@@ -1,0 +1,17 @@
+<?php $settingsAction = input_text('action'); ?>
+<header class="page-heading"><div><p class="eyebrow">YOUR SPACE, YOUR DETAILS</p><h1>Account settings<span class="heading-dot">.</span></h1><p>A few things that make BrainLoop yours.</p></div></header>
+<div class="settings-grid">
+<section class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">THE ESSENTIALS</p><h2>Your profile</h2></div><span class="stat-icon"><?= icon('user',22) ?></span></div>
+<form method="post" action="<?= e(url('/settings')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="profile">
+<div class="form-field"><label for="full_name">Full name</label><input id="full_name" name="full_name" type="text" value="<?= e(old('full_name',$user['full_name'])) ?>" required maxlength="80" autocomplete="name"><?= field_error('full_name') ?></div>
+<div class="form-field"><label for="email">Email address</label><input id="email" name="email" type="email" value="<?= e(old('email',$user['email'])) ?>" required maxlength="254" autocomplete="email"><?= field_error('email') ?></div>
+<div class="form-field"><label for="profile-password">Current password <span class="optional">to change email</span></label><input id="profile-password" name="current_password" type="password" autocomplete="current-password" maxlength="72"><p class="field-hint">For your security, an email change requires your current password.</p><?= $settingsAction === 'profile' ? field_error('current_password') : '' ?></div>
+<div class="form-actions"><button class="btn btn-primary" type="submit"><?= icon('check',17) ?> Save profile</button></div></form></section>
+<section class="panel form-panel"><div class="panel-heading"><div><p class="eyebrow">KEEP YOUR ACCOUNT YOURS</p><h2>Change password</h2></div><span class="stat-icon"><?= icon('lock',22) ?></span></div>
+<form method="post" action="<?= e(url('/settings')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="password">
+<div class="form-field"><label for="current-password">Current password</label><input id="current-password" name="current_password" type="password" autocomplete="current-password" required maxlength="72"><?= $settingsAction === 'password' ? field_error('current_password') : '' ?></div>
+<div class="form-field"><label for="password">New password</label><input id="password" name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="72"><p class="field-hint">Use at least 10 characters and no more than 72 bytes. A longer, memorable passphrase works well.</p><?= field_error('password') ?></div>
+<div class="form-field"><label for="password-confirmation">Confirm new password</label><input id="password-confirmation" name="password_confirmation" type="password" autocomplete="new-password" required minlength="10" maxlength="72"><?= field_error('password_confirmation') ?></div>
+<div class="form-actions"><button class="btn btn-primary" type="submit"><?= icon('lock',17) ?> Update password</button></div></form></section>
+</div>
+<section class="panel account-details"><div><h2>A little about your account</h2><p>Member since <?= e(format_date($user['created_at'])) ?>. Review dates and learning analytics use UTC so your history stays consistent.</p></div><form action="<?= e(url('/logout')) ?>" method="post"><?= csrf_field() ?><button class="btn btn-secondary" type="submit"><?= icon('logout',17) ?> Log out</button></form></section>
