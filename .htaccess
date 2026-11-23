@@ -1,14 +1,49 @@
-Options -Indexes
+
+# ==================================================
+# Security & Directory Protection
+# ==================================================
+
+Options -Indexes -MultiViews
 DirectoryIndex index.php
 
+# Deny access to hidden files and directories (.env, .git, etc.)
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
 
+# Deny access to sensitive files
+<FilesMatch "(?i)^(?:composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit\.xml(?:\.dist)?|\.env(?:\..*)?|artisan|Makefile|Dockerfile|docker-compose\.ya?ml|.*\.(?:log|sql|bak|old|orig|save|swp|dist))$">
+    Require all denied
+</FilesMatch>
+
+# ==================================================
+# URL Rewriting
+# ==================================================
+
 RewriteEngine On
-# The full project is in htdocs, so only its front controller and assets are public.
+
+# Block direct access to internal project directories
 RewriteRule ^(?:app|database|docs|scripts|storage|tests|public|\.github)(?:/|$) - [F,END,NC]
-RewriteRule ^(?:README\.md|CONTRIBUTING\.md|SECURITY\.md|LICENSE)$ - [F,END,NC]
-RewriteRule ^assets/(.+\.(?:css|svg|png|jpe?g|webp|ico))$ public/assets/$1 [END,NC]
-RewriteRule ^index\.php$ - [END]
+
+# Block sensitive project documentation
+RewriteRule ^(?:README|CONTRIBUTING|SECURITY|LICENSE)(?:\.[^/]+)?$ - [F,END,NC]
+
+# Block common sensitive files anywhere in the project
+RewriteRule (?:^|/)(?:\.env(?:\..*)?|composer\.(?:json|lock)|phpunit\.xml(?:\.dist)?|.*\.(?:log|sql|bak|old|orig|save|swp))$ - [F,END,NC]
+
+# ==================================================
+# Public Asset Routing
+# ==================================================
+
+# Serve approved static assets from public/assets
+RewriteRule ^assets/(.+\.(?:css|js|svg|png|jpe?g|gif|webp|ico|woff2?|ttf))$ public/assets/$1 [END,NC]
+
+# ==================================================
+# Front Controller
+# ==================================================
+
+# Allow direct execution of the front controller
+RewriteRule ^index\.php$ - [END,NC]
+
+# Route all remaining requests through index.php
 RewriteRule ^ index.php [END,QSA]
