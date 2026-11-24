@@ -79,6 +79,8 @@ BrainLoop combines a simple learning experience with a structured PHP and databa
 
 ## Installation
 
+**Checkout status (November 24, 2026):** this repository is missing the `public/` entry point/assets and `database/` schemas referenced below. A fresh clone cannot run the full application until those files are restored. The controller checks can run independently; see [verification and remaining blockers](docs/VERIFICATION.md).
+
 ### Run locally with XAMPP
 
 The recommended local setup uses XAMPP on Windows.
@@ -240,37 +242,15 @@ The `Store` model applies ownership checks, while the scheduling service operate
 
 ## Testing and Quality Assurance
 
-BrainLoop includes dependency-free PHP test runners for scheduling, database operations, models, analytics, and security helpers.
-
-Run the default test suite:
+Run the checked-in controller regression suite with PHP 8.2 or newer:
 
 ```powershell
-php tests/run.php
-php tests/http.php
+php tests/controllers.php
 ```
 
-These commands use SQLite by default, with an in-memory database for model tests and a temporary database file for HTTP checks.
+It checks search normalization, deck lookup during study, and CSV parsing through the real controllers with synthetic store/request doubles. It needs no database, Composer packages, or application server. These are controller-level checks, not full HTTP or database tests.
 
-For optional MySQL/MariaDB testing:
-
-```powershell
-$env:BRAINLOOP_TEST_DB_HOST = "127.0.0.1"
-$env:BRAINLOOP_TEST_DB_PORT = "3306"
-$env:BRAINLOOP_TEST_DB_USER = "root"
-
-php tests/run.php --mysql
-php tests/http.php --mysql
-php tests/http.php --mysql --subdirectory
-```
-
-The MySQL test suite creates isolated temporary databases and removes only the databases and users it creates. It does not use the normal application database.
-
-GitHub Actions is configured to verify PHP syntax, SQLite tests, and MySQL/MariaDB tests across PHP 8.2, 8.3, and 8.4, including root and `/BrainLoop/` subdirectory deployments.
-
-For additional testing instructions, see:
-
-- [`docs/TESTING.md`](docs/TESTING.md)
-- [`docs/VERIFICATION.md`](docs/VERIFICATION.md)
+The `PHP checks` GitHub Actions workflow runs PHP syntax checks and this controller suite on PHP 8.2, 8.3, and 8.4. The previously documented `tests/run.php` and `tests/http.php` runners are not present in this checkout, so SQLite/MySQL, real uploads, and root/subdirectory HTTP coverage remain unverified. See [verification evidence](docs/VERIFICATION.md) for what was actually checked and what still needs restoring.
 
 ## Security
 

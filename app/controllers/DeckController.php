@@ -48,7 +48,7 @@ final class DeckController
     public function listing(): void
     {
         $userId  =$this->currentUserId();
-        $query   =$this->extractSearchQuery();
+        $query   = self::query();
         $subject =$this->extractSubjectFilter();
 
         render('decks', [
@@ -67,7 +67,7 @@ final class DeckController
     {
         $userId =$this->currentUserId();
         $deck   =$this->requireOwnedDeck($id,$userId);
-        $query  =$this->extractSearchQuery();
+        $query  = self::query();
 
         render('deck_detail', [
             'title' => $deck['title'],
@@ -323,7 +323,7 @@ final class DeckController
         }
     }
 
-    private function extractSearchQuery(): string
+    public static function query(): string
     {
         $raw =$_GET['q'] ?? '';
         if (!is_string($raw)) {
@@ -421,7 +421,7 @@ final class DeckController
         }
 
         $size = filesize($file['tmp_name']);
-        if ($size === false || $size === 0 \vert{}\vert{}$size > self::MAX_CSV_BYTES) {
+        if ($size === false || $size === 0 || $size > self::MAX_CSV_BYTES) {
             return 'Use a nonempty CSV file of at most 1 MB.';
         }
 
@@ -450,5 +450,40 @@ final class DeckController
                 static fn(mixed $col): string => strtolower(trim((string) $col)),$header
             );
 
-            if (
-                $normalizedHeader !== ['question',
+            if ($normalizedHeader !== ['question', 'answer'] && $normalizedHeader !== ['question', 'answer', 'explanation']) {
+                return [[], 'The header must be question,answer or question,answer,explanation.'];
+            }
+
+            $rows = [];
+            $line = 1;
+            while (($row = fgetcsv($handle, 0, ',', '"', '')) !== false) {
+                ++$line;
+                if ($row === [null] || $row === ['']) {
+                    continue;
+                }
+                if (count($row) !== count($normalizedHeader)) {
+                    return [[], 'CSV record ' . $line . ' has an unexpected number of columns.'];
+                }
+                $data = [
+                    'question' => trim((string) $row[0]),
+                    'answer' => trim((string) $row[1]),
+                    'explanation' => trim((string) ($row[2] ?? '')),
+                ];
+                $rowErrors = $this->validateCardInput($data);
+                if ($rowErrors !== []) {
+                    return [[], 'CSV record ' . $line . ': ' . reset($rowErrors)];
+                }
+                $rows[] = $data;
+                if (count($rows) > self::MAX_CSV_ROWS) {
+                    return [[], 'Import at most ' . self::MAX_CSV_ROWS . ' flashcards per file.'];
+                }
+            }
+            if ($rows === []) {
+                return [[], 'This CSV contains no flashcards.'];
+            }
+            return [$rows, null];
+        } finally {
+            fclose($handle);
+        }
+    }
+}

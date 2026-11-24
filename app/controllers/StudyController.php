@@ -13,7 +13,7 @@ final class StudyController
         if (!in_array($mode,['due','practice'],true)) { abort_request(422,'Choose due review or intentional practice.'); }
         $rawId = input_text('deck_id'); $deckId = $rawId === '' || $rawId === '0' ? null : valid_id($rawId);
         if ($deckId === 0) { abort_request(404,'This deck is unavailable.'); }
-        if ($deckId) { DeckController::ownedDeck($deckId); }
+        if ($deckId) { (new DeckController())->requireOwnedDeck($deckId); }
         $ids = store()->studyCards((int) $user['id'],$deckId,$mode);
         if (!$ids) { flash($mode==='due'?'You’re all caught up. Come back when more cards are due, or choose practice.':'Add a few flashcards before starting a session.','info'); redirect($deckId?'/decks/' . $deckId:'/study'); }
         $_SESSION['study'] = ['user_id'=>(int) $user['id'],'deck_id'=>$deckId,'mode'=>$mode,'queue'=>$ids,'total'=>count($ids),'completed'=>0,'ratings'=>['again'=>0,'hard'=>0,'good'=>0,'easy'=>0],'revealed'=>false,'nonce'=>bin2hex(random_bytes(24)),'started_at'=>utc_now()];
@@ -34,7 +34,7 @@ final class StudyController
             array_shift($session['queue']); $session['total']--; $session['revealed'] = false; $session['nonce'] = bin2hex(random_bytes(24));
         }
         if (!$session['queue']) { self::finish(false); }
-        $deck = $session['deck_id'] ? DeckController::ownedDeck((int) $session['deck_id']) : ['title'=>'All decks','id'=>null];
+        $deck = $session['deck_id'] ? (new DeckController())->requireOwnedDeck((int) $session['deck_id']) : ['title'=>'All decks','id'=>null];
         $revealed = (bool) $session['revealed'];
         if (!$revealed) { unset($card['answer'],$card['explanation']); }
         render('study',['title'=>'Focus session','session'=>$session,'card'=>$card,'deck'=>$deck,'revealed'=>$revealed,'position'=>$session['completed']+1,'total'=>$session['total']]);
