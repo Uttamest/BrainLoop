@@ -1,5 +1,15 @@
 # Verification
 
+## Review scheduling checks — November 25, 2026 (Asia/Seoul)
+
+Added the missing [scheduling guide](SCHEDULING.md) and a dependency-free service suite. Nine cases verify Good learning/lapse recovery, early Hard/Easy steps and minimum growth, mature ratings using pre-review ease, UTC/Korea/DST-equivalent clocks, ten-minute relearning across leap/year boundaries, legacy/default numeric progress, interval/ease caps, repeatability/input preservation, and unsupported ratings.
+
+Local results on XAMPP PHP 8.2.12: `php tests/scheduler.php` passed 9 cases; `php tests/controllers.php` passed 14 cases; all 47 PHP files passed syntax checking; `git diff --check` passed. The CI matrix now runs both suites on PHP 8.2, 8.3 and 8.4. CI results are separate from these local results.
+
+The new service tests require no database, bootstrap or server and use fixed clocks and synthetic progress. Scheduler production behavior is unchanged. Practice persistence, SQL/HTTP integration and browser journeys remain unverified; the missing application files listed below still block full-app checks.
+
+This increment branches from the controller repair in PR #1, and its pull request targets that branch until the earlier repair is merged. Its diff contains the scheduling checks/documentation and CI step; it does not repeat the controller repair.
+
 ## Controller integration repair — November 24, 2026 (Asia/Seoul)
 
 The starting checkout at `d59c6e3` failed PHP syntax checking in `DeckController.php`: a malformed operator and a CSV parser cut off mid-function prevented the class from loading. The parser tail is restored from the earlier `847d2e3` implementation, adapted to the current instance validator and header variable. The current controller refactor is preserved.
@@ -22,6 +32,6 @@ The suite uses the real controllers and global input validators, with synthetic 
 
 This checkout has no `public/` entry point, router or assets, and no `database/schema.mysql.sql` or `database/schema.sqlite.sql`. Root `index.php` requires the missing `public/index.php`; the database migration requires the missing schemas. These need to be restored from the team's complete project before the documented installation flow can run.
 
-The previously documented `scripts/setup.php`, `tests/run.php`, and `tests/http.php` are also absent. The scheduling/deployment/testing guides and screenshots linked elsewhere in README are not present in this checkout. The new workflow provides syntax/controller checks only; it does not replace SQLite/MySQL integration tests, HTTP tests, or root/subdirectory deployment verification.
+The previously documented `scripts/setup.php`, `tests/run.php`, and `tests/http.php` are also absent. The deployment/testing guides and screenshots linked elsewhere in README remain missing; the scheduling guide was added on November 25. Service/controller checks do not replace SQLite/MySQL integration tests, HTTP tests, or root/subdirectory deployment verification.
 
 Next useful work is to restore those project files, run the real installation and core study/search/import journeys with isolated test records, then expand verification from observed results. Do not record those checks as passed until they have actually run.

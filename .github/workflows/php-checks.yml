@@ -25,3 +25,5 @@ jobs:
         run: find app tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l && php -l index.php
       - name: Check controller integration
         run: php tests/controllers.php
+      - name: Check review scheduling
+        run: php tests/scheduler.php
