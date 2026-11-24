@@ -4,81 +4,102 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use RuntimeException;
+
+/**
+ * Handles HTTP lifecycle actions for flashcard decks, cards, and CSV import/export.
+ */
 final class DeckController
 {
-    private const MAX_QUERY_LENGTH = 200;
+    private const MAX_QUERY_LENGTH          = 200;
     private const MAX_SUBJECT_FILTER_LENGTH = 100;
+    private const MAX_CSV_BYTES             = 1_048_576; // 1 MB
+    private const MAX_CSV_ROWS              = 500;
 
-    private const DECK_LIMITS = [
+    private const DECK_FIELD_LIMITS = [
         'title'       => [1, 120],
         'description' => [0, 1500],
         'subject'     => [0, 80],
     ];
 
-    private const CARD_LIMITS = [
+    private const CARD_FIELD_LIMITS = [
         'question'    => [1, 2000],
         'answer'      => [1, 5000],
         'explanation' => [0, 5000],
     ];
 
-    private const MAX_CSV_BYTES = 1048576; // 1 MB
-    private const MAX_CSV_ROWS  = 500;
+    /** @var array<string, mixed> */
+    private array $colors;
 
-    public static function listing(): void
+    /**
+     * @param object|null               $store  Persistence store instance (defaults to global store()).
+     * @param array<string, mixed>|null $colors Available deck theme colors (defaults to global config()).
+     */
+    public function __construct(
+        private readonly ?object $store = null,
+        ?array $colors = null,
+    ) {
+        $this->colors =$colors ?? (config()['colors'] ?? []);
+    }
+
+    /**
+     * Display the authenticated user's deck directory with optional search and subject filters.
+     */
+    public function listing(): void
     {
-        $user    = require_user();
-        $userId  = (int) $user['id'];
-        $query   = self::query();
-        $subject = self::subjectFilter();
+        $userId  =$this->currentUserId();
+        $query   =$this->extractSearchQuery();
+        $subject =$this->extractSubjectFilter();
 
         render('decks', [
             'title'    => 'My decks',
-            'decks'    => store()->decks($userId, $query, $subject),
-            'subjects' => store()->subjects($userId),
+            'decks'    => $this->db()->decks($userId, $query,$subject),
+            'subjects' => $this->db()->subjects($userId),
             'query'    => $query,
             'subject'  => $subject,
         ]);
     }
 
-    public static function detail(int $id): void
+    /**
+     * Display a single deck and its filtered flashcards.
+     */
+    public function detail(int $id): void
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        $deck   = self::ownedDeck($id, $userId);
-        $query  = self::query();
+        $userId =$this->currentUserId();
+        $deck   =$this->requireOwnedDeck($id,$userId);
+        $query  =$this->extractSearchQuery();
 
         render('deck_detail', [
             'title' => $deck['title'],
             'deck'  => $deck,
             'query' => $query,
-            'cards' => store()->cards($id, $userId, $query),
+            'cards' => $this->db()->cards($id, $userId,$query),
         ]);
     }
 
-    public static function deckForm(?int $id = null): void
+    /**
+     * Render and process the deck creation or editing form.
+     */
+    public function deckForm(?int $id = null): void
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        $deck   = $id !== null ? self::ownedDeck($id, $userId) : null;
-        $errors = [];
-        $old    = [];
+        $userId = $this->currentUserId();$deck   = $id !== null ? $this->requireOwnedDeck($id,$userId) : null;
+        $errors = [];$old    = [];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $old = [
+        if ($this->isPostRequest()) {$old = [
                 'title'       => input_text('title'),
                 'description' => input_text('description'),
                 'subject'     => input_text('subject'),
                 'color'       => input_text('color'),
             ];
 
-            $errors = self::validateDeck($old);
+            $errors = $this->validateDeckInput($old);
 
             if ($errors === []) {
                 if ($id !== null) {
-                    store()->updateDeck($id, $userId, $old);
+                    $this->db()->updateDeck($id, $userId,$old);
                     flash('Deck updated.');
                 } else {
-                    $id = store()->createDeck($userId, $old);
+                    $id =$this->db()->createDeck($userId,$old);
                     flash('A fresh space for new knowledge. Your deck is ready.');
                 }
 
@@ -91,19 +112,20 @@ final class DeckController
             'deck'   => $deck,
             'old'    => $old,
             'errors' => $errors,
-            'colors' => config()['colors'],
+            'colors' => $this->colors,
         ]);
     }
 
-    public static function deleteDeck(int $id): void
+    /**
+     * Render confirmation prompt or permanently delete a deck and its review history.
+     */
+    public function deleteDeck(int $id): void
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        $deck   = self::ownedDeck($id, $userId);
+        $userId =$this->currentUserId();
+        $deck   =$this->requireOwnedDeck($id,$userId);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            self::requireConfirmation();
-            store()->deleteDeck($id, $userId);
+        if ($this->isPostRequest()) {
+            $this->assertConfirmed();$this->db()->deleteDeck($id,$userId);
 
             flash('Deck and its cards and review records deleted.');
             redirect('/decks');
@@ -111,38 +133,37 @@ final class DeckController
 
         render('confirm', [
             'title'   => 'Delete deck',
-            'heading' => 'Delete “' . $deck['title'] . '”?',
+            'heading' => sprintf('Delete “%s”?', $deck['title']),
             'message' => 'This permanently removes this deck, all its flashcards, and their review history. Your analytics will be recalculated. This cannot be undone.',
-            'action'  => '/decks/' . $id . '/delete',
-            'cancel'  => '/decks/' . $id,
+            'action'  => sprintf('/decks/%d/delete', $id),
+            'cancel'  => sprintf('/decks/%d', $id),
         ]);
     }
 
-    public static function cardForm(int $id, bool $editing = false): void
+    /**
+     * Render and process the flashcard creation or editing form.
+     */
+    public function cardForm(int $id, bool$editing = false): void
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        $card   = $editing ? self::ownedCard($id, $userId) : null;
-        $deckId = $card !== null ? (int) $card['deck_id'] : $id;
-        $deck   = self::ownedDeck($deckId, $userId);
-        $errors = [];
-        $old    = [];
+        $userId = $this->currentUserId();$card   = $editing ? $this->requireOwnedCard($id,$userId) : null;
+        $deckId =$card !== null ? (int) $card['deck_id'] :$id;
+        $deck   =$this->requireOwnedDeck($deckId,$userId);
+        $errors = [];$old    = [];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $old = [
+        if ($this->isPostRequest()) {$old = [
                 'question'    => input_text('question'),
                 'answer'      => input_text('answer'),
                 'explanation' => input_text('explanation'),
             ];
 
-            $errors = self::validateCard($old);
+            $errors = $this->validateCardInput($old);
 
             if ($errors === []) {
                 if ($editing) {
-                    store()->updateCard($id, $userId, $old);
+                    $this->db()->updateCard($id, $userId,$old);
                     flash('Flashcard updated.');
                 } else {
-                    store()->createCard($deckId, $userId, $old);
+                    $this->db()->createCard($deckId, $userId,$old);
                     flash('Flashcard added. One more idea, ready to stick.');
                 }
 
@@ -159,15 +180,16 @@ final class DeckController
         ]);
     }
 
-    public static function deleteCard(int $id): void
+    /**
+     * Render confirmation prompt or permanently delete a flashcard.
+     */
+    public function deleteCard(int $id): void
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        $card   = self::ownedCard($id, $userId);
+        $userId =$this->currentUserId();
+        $card   =$this->requireOwnedCard($id,$userId);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            self::requireConfirmation();
-            store()->deleteCard($id, $userId);
+        if ($this->isPostRequest()) {
+            $this->assertConfirmed();$this->db()->deleteCard($id,$userId);
 
             flash('Flashcard and its review records deleted.');
             redirect('/decks/' . $card['deck_id']);
@@ -177,62 +199,68 @@ final class DeckController
             'title'   => 'Delete flashcard',
             'heading' => 'Delete this flashcard?',
             'message' => excerpt($card['question'], 180) . ' — Its review history will also be removed. This cannot be undone.',
-            'action'  => '/cards/' . $id . '/delete',
-            'cancel'  => '/decks/' . $card['deck_id'],
+            'action'  => sprintf('/cards/%d/delete', $id),
+            'cancel'  => sprintf('/decks/%d', $card['deck_id']),
         ]);
     }
 
-    public static function export(int $id): never
+    /**
+     * Stream a UTF-8 CSV download of all flashcards in an owned deck, neutralized against formula injection.
+     */
+    public function export(int $id): never
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        self::ownedDeck($id, $userId);
+        $userId = $this->currentUserId();$this->requireOwnedDeck($id,$userId);
 
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="brainloop-deck-' . $id . '.csv"');
+        header('X-Content-Type-Options: nosniff');
+        header(sprintf('Content-Disposition: attachment; filename="brainloop-deck-%d.csv"', $id));
 
-        $out = fopen('php://output', 'wb');
-        if ($out === false) {
-            abort_request(500, 'Unable to generate CSV export stream.');
+        $stream = fopen('php://output', 'wb');
+        if ($stream === false) {
+            abort_request(500, 'Unable to initialize CSV export stream.');
         }
 
-        // Write UTF-8 BOM for spreadsheet compatibility
-        fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['question', 'answer', 'explanation'], ',', '"', '');
+        try {
+            // Prepend UTF-8 BOM so spreadsheet clients decode non-ASCII text accurately.
+            fwrite($stream, "\xEF\xBB\xBF");
+            fputcsv($stream, ['question', 'answer', 'explanation'], ',', '"', '');
 
-        foreach (store()->cards($id, $userId) as $card) {
-            $row = [];
-            foreach (['question', 'answer', 'explanation'] as $field) {
-                $row[] = self::escapeCsvFormula((string) $card[$field]);
+            foreach ($this->db()->cards($id, $userId) as$card) {
+                fputcsv($stream, [
+                    $this->sanitizeCsvCell((string)$card['question']),
+                    $this->sanitizeCsvCell((string)$card['answer']),
+                    $this->sanitizeCsvCell((string)$card['explanation']),
+                ], ',', '"', '');
             }
-            fputcsv($out, $row, ',', '"', '');
+        } finally {
+            fclose($stream);
         }
 
-        fclose($out);
         exit;
     }
 
-    public static function import(int $id): void
+    /**
+     * Render and process bulk CSV flashcard imports into an owned deck.
+     */
+    public function import(int $id): void
     {
-        $user   = require_user();
-        $userId = (int) $user['id'];
-        $deck   = self::ownedDeck($id, $userId);
-        $errors = [];
+        $userId = $this->currentUserId();$deck   = $this->requireOwnedDeck($id, $userId);$errors = [];
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $file = $_FILES['csv'] ?? null;
-            $uploadError = self::validateCsvUpload($file);
+        if ($this->isPostRequest()) {
+            $file        =$_FILES['csv'] ?? null;
+            $uploadError = $this->validateCsvUpload($file);
 
             if ($uploadError !== null) {
-                $errors['csv'] = $uploadError;
+                $errors['csv'] =$uploadError;
             } else {
-                [$rows, $parseError] = self::parseCsvFile($file['tmp_name']);
+                /** @var array{tmp_name: string} $file */
+                [$rows,$parseError] = $this->parseCsvFile($file['tmp_name']);
 
                 if ($parseError !== null) {
-                    $errors['csv'] = $parseError;
+                    $errors['csv'] =$parseError;
                 } else {
-                    $count = store()->importCards($id, $userId, $rows);
-                    flash($count . ' flashcards imported successfully.');
+                    $importedCount = $this->db()->importCards($id, $userId,$rows);
+                    flash(sprintf('%d flashcards imported successfully.', $importedCount));
                     redirect('/decks/' . $id);
                 }
             }
@@ -245,77 +273,122 @@ final class DeckController
         ]);
     }
 
-    public static function ownedDeck(int $id, ?int $userId = null): array
-    {
-        $userId ??= (int) require_user()['id'];
+    // -------------------------------------------------------------------------
+    // Authorization & Request Helpers
+    // -------------------------------------------------------------------------
 
-        return store()->deck($id, $userId)
+    /**
+     * @return array<string, mixed>
+     */
+    public function requireOwnedDeck(int $id, ?int $userId = null): array
+    {
+        $resolvedUserId = $userId ?? $this->currentUserId();
+
+        return $this->db()->deck($id,$resolvedUserId)
             ?? abort_request(404, 'This deck is unavailable.');
     }
 
-    public static function ownedCard(int $id, ?int $userId = null): array
+    /**
+     * @return array<string, mixed>
+     */
+    public function requireOwnedCard(int $id, ?int $userId = null): array
     {
-        $userId ??= (int) require_user()['id'];
+        $resolvedUserId = $userId ?? $this->currentUserId();
 
-        return store()->card($id, $userId)
+        return $this->db()->card($id,$resolvedUserId)
             ?? abort_request(404, 'This flashcard is unavailable.');
     }
 
-    public static function query(): string
+    private function currentUserId(): int
     {
-        $raw = $_GET['q'] ?? '';
+        $user = require_user();
+
+        return (int) $user['id'];
+    }
+
+    private function db(): object
+    {
+        return $this->store ?? store();
+    }
+
+    private function isPostRequest(): bool
+    {
+        return ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
+    }
+
+    private function assertConfirmed(): void
+    {
+        if (input_text('confirm') !== 'yes') {
+            abort_request(422, 'Please confirm this action using the confirmation form.');
+        }
+    }
+
+    private function extractSearchQuery(): string
+    {
+        $raw =$_GET['q'] ?? '';
         if (!is_string($raw)) {
             return '';
         }
 
         $trimmed = trim($raw);
 
-        return valid_text($trimmed, 0, self::MAX_QUERY_LENGTH) ? $trimmed : '';
+        return valid_text($trimmed, 0, self::MAX_QUERY_LENGTH) ?$trimmed : '';
     }
 
-    private static function subjectFilter(): string
+    private function extractSubjectFilter(): string
     {
-        $raw = $_GET['subject'] ?? null;
+        $raw =$_GET['subject'] ?? null;
         if (!is_string($raw)) {
             return '';
         }
 
-        return mb_substr($raw, 0, self::MAX_SUBJECT_FILTER_LENGTH);
+        $trimmed = trim($raw);
+
+        return valid_text($trimmed, 0, self::MAX_SUBJECT_FILTER_LENGTH)
+            ? $trimmed
+            : mb_substr($trimmed, 0, self::MAX_SUBJECT_FILTER_LENGTH);
     }
 
-    private static function validateDeck(array $data): array
+    // -------------------------------------------------------------------------
+    // Domain Validation
+    // -------------------------------------------------------------------------
+
+    /**
+     * @param array<string, string> $data
+     * @return array<string, string>
+     */
+    private function validateDeckInput(array $data): array
     {
         $errors = [];
 
-        if (!valid_text($data['title'], ...self::DECK_LIMITS['title'])) {
-            $errors['title'] = 'Give your deck a title of 1–120 characters.';
+        if (!valid_text($data['title'], ...self::DECK_FIELD_LIMITS['title'])) {$errors['title'] = 'Give your deck a title of 1–120 characters.';
         }
 
-        if (!valid_text($data['description'], ...self::DECK_LIMITS['description'])) {
-            $errors['description'] = 'Keep descriptions under 1,500 characters.';
+        if (!valid_text($data['description'], ...self::DECK_FIELD_LIMITS['description'])) {$errors['description'] = 'Keep descriptions under 1,500 characters.';
         }
 
-        if (!valid_text($data['subject'], ...self::DECK_LIMITS['subject'])) {
-            $errors['subject'] = 'Keep subjects under 80 characters.';
+        if (!valid_text($data['subject'], ...self::DECK_FIELD_LIMITS['subject'])) {$errors['subject'] = 'Keep subjects under 80 characters.';
         }
 
-        if (!isset(config()['colors'][$data['color']])) {
-            $errors['color'] = 'Choose one of the available colors.';
+        if (!isset($this->colors[$data['color']])) {$errors['color'] = 'Choose one of the available colors.';
         }
 
         return $errors;
     }
 
-    private static function validateCard(array $data): array
+    /**
+     * @param array<string, string> $data
+     * @return array<string, string>
+     */
+    private function validateCardInput(array $data): array
     {
         $errors = [];
 
-        foreach (self::CARD_LIMITS as $field => [$min, $max]) {
-            if (!valid_text($data[$field], $min, $max)) {
+        foreach (self::CARD_FIELD_LIMITS as $field => [$min,$max]) {
+            if (!valid_text($data[$field], $min,$max)) {
                 $errors[$field] = sprintf(
                     '%s must be %d–%s valid UTF-8 characters.',
-                    ucfirst($field),
-                    $min,
+                    ucfirst($field),$min,
                     number_format($max)
                 );
             }
@@ -324,21 +397,19 @@ final class DeckController
         return $errors;
     }
 
-    private static function requireConfirmation(): void
-    {
-        if (input_text('confirm') !== 'yes') {
-            abort_request(422, 'Please confirm this action using the confirmation form.');
-        }
-    }
+    // -------------------------------------------------------------------------
+    // CSV Processing & Formula Injection Mitigation
+    // -------------------------------------------------------------------------
 
-    private static function escapeCsvFormula(string $value): string
+    private function sanitizeCsvCell(string $value): string
     {
+        // Prefix cells starting with spreadsheet formula triggers (=, +, -, @, tab, CR)
         return preg_match('/^[\s\x{FEFF}]*[=+\-@\t\r]/u', $value) === 1
             ? "'" . $value
             : $value;
     }
 
-    private static function validateCsvUpload(mixed $file): ?string
+    private function validateCsvUpload(mixed $file): ?string
     {
         if (
             !is_array($file)
@@ -350,7 +421,7 @@ final class DeckController
         }
 
         $size = filesize($file['tmp_name']);
-        if ($size === false || $size === 0 || $size > self::MAX_CSV_BYTES) {
+        if ($size === false || $size === 0 \vert{}\vert{}$size > self::MAX_CSV_BYTES) {
             return 'Use a nonempty CSV file of at most 1 MB.';
         }
 
@@ -358,9 +429,9 @@ final class DeckController
     }
 
     /**
-     * @return array{0: array<int, array<string, string>>, 1: ?string}
+     * @return array{0: list<array{question: string, answer: string, explanation: string}>, 1: ?string}
      */
-    private static function parseCsvFile(string $tmpPath): array
+    private function parseCsvFile(string $tmpPath): array
     {
         $handle = fopen($tmpPath, 'rb');
         if ($handle === false) {
@@ -373,52 +444,11 @@ final class DeckController
                 return [[], 'The CSV file is empty or unreadable.'];
             }
 
-            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
-            $header    = array_map(static fn($v): string => strtolower(trim((string) $v)), $header);
+            $firstColumn = preg_replace('/^\xEF\xBB\xBF/', '', (string) ($header[0] ?? ''));$header[0]   = $firstColumn ?? (string) ($header[0] ?? '');
 
-            if ($header !== ['question', 'answer'] && $header !== ['question', 'answer', 'explanation']) {
-                return [[], 'The header must be question,answer or question,answer,explanation.'];
-            }
+            $normalizedHeader = array_map(
+                static fn(mixed $col): string => strtolower(trim((string) $col)),$header
+            );
 
-            $rows = [];
-            $line = 1;
-
-            while (($row = fgetcsv($handle, 0, ',', '"', '')) !== false) {
-                $line++;
-
-                if ($row === [null] || $row === ['']) {
-                    continue;
-                }
-
-                if (count($row) !== count($header)) {
-                    return [[], 'CSV record ' . $line . ' has an unexpected number of columns.'];
-                }
-
-                $data = [
-                    'question'    => trim((string) $row[0]),
-                    'answer'      => trim((string) $row[1]),
-                    'explanation' => trim((string) ($row[2] ?? '')),
-                ];
-
-                $rowErrors = self::validateCard($data);
-                if ($rowErrors !== []) {
-                    return [[], 'CSV record ' . $line . ': ' . reset($rowErrors)];
-                }
-
-                $rows[] = $data;
-
-                if (count($rows) > self::MAX_CSV_ROWS) {
-                    return [[], 'Import at most ' . self::MAX_CSV_ROWS . ' flashcards per file.'];
-                }
-            }
-
-            if ($rows === []) {
-                return [[], 'This CSV contains no flashcards.'];
-            }
-
-            return [$rows, null];
-        } finally {
-            fclose($handle);
-        }
-    }
-}
+            if (
+                $normalizedHeader !== ['question',
