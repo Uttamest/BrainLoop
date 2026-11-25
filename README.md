@@ -242,15 +242,18 @@ The `Store` model applies ownership checks, while the scheduling service operate
 
 ## Testing and Quality Assurance
 
-Run the checked-in controller regression suite with PHP 8.2 or newer:
+Run the checked-in PHP checks with PHP 8.2 or newer:
 
 ```powershell
 php tests/controllers.php
+php tests/scheduler.php
 ```
 
-It checks search normalization, deck lookup during study, and CSV parsing through the real controllers with synthetic store/request doubles. It needs no database, Composer packages, or application server. These are controller-level checks, not full HTTP or database tests.
+The controller suite checks search normalization, deck lookup during study, and CSV parsing through the real controllers with synthetic store/request doubles. It needs no database, Composer packages, or application server. These are controller-level checks, not full HTTP or database tests.
 
-The `PHP checks` GitHub Actions workflow runs PHP syntax checks and this controller suite on PHP 8.2, 8.3, and 8.4. The previously documented `tests/run.php` and `tests/http.php` runners are not present in this checkout, so SQLite/MySQL, real uploads, and root/subdirectory HTTP coverage remain unverified. See [verification evidence](docs/VERIFICATION.md) for what was actually checked and what still needs restoring.
+The scheduler suite independently verifies rating sequences, lapse recovery, UTC/date boundaries, interval/ease limits, and deterministic results without changing its inputs. See [the scheduling rules](docs/SCHEDULING.md) for the current policy and examples.
+
+The `PHP checks` GitHub Actions workflow runs PHP syntax checks and both suites on PHP 8.2, 8.3, and 8.4. The previously documented `tests/run.php` and `tests/http.php` runners are not present in this checkout, so SQLite/MySQL, real uploads, and root/subdirectory HTTP coverage remain unverified. See [verification evidence](docs/VERIFICATION.md) for what was actually checked and what still needs restoring.
 
 ## Security
 
