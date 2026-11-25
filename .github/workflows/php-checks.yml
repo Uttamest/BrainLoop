@@ -10,6 +10,24 @@ permissions:
 jobs:
   controllers:
     runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: ci-test-password
+          MARIADB_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 --password=ci-test-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      BRAINLOOP_TEST_DB_HOST: 127.0.0.1
+      BRAINLOOP_TEST_DB_PORT: 3306
+      BRAINLOOP_TEST_DB_USER: root
+      BRAINLOOP_TEST_DB_PASSWORD: ci-test-password
     strategy:
       fail-fast: false
       matrix:
@@ -19,11 +37,16 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, dom
           coverage: none
           tools: none
       - name: Check PHP syntax
-        run: find app tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l && php -l index.php
+        run: find app public scripts tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l && php -l index.php
       - name: Check controller integration
         run: php tests/controllers.php
       - name: Check review scheduling
         run: php tests/scheduler.php
+      - name: Check HTTP workflows at hostname root
+        run: php tests/http.php
+      - name: Check HTTP workflows in a subdirectory
+        run: php tests/http.php --subdirectory

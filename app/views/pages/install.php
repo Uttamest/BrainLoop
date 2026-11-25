@@ -3,7 +3,6 @@
 <div class="form-layout">
 <section class="panel form-panel">
 <div class="notice notice-info" role="note"><?= icon('info',20) ?><span>Start <strong>Apache</strong> and <strong>MySQL</strong> in the XAMPP Control Panel before continuing. This setup works only from this computer.</span></div>
-<?php if (!empty($errors['setup'])): ?><div class="notice notice-error" role="alert"><?= icon('info',20) ?><span><?= e($errors['setup']) ?></span></div><?php endif; ?>
 <form method="post" action="<?= e(url('/setup')) ?>" autocomplete="off">
 <?= csrf_field() ?>
 <div class="form-grid">

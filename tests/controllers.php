@@ -112,8 +112,20 @@ namespace App\Controllers {
     }
 }
 
+namespace App\Services {
+    // This controller test never provisions a database or writes private settings.
+    final class LocalInstaller
+    {
+        public static function isLocalRequest(): bool { return true; }
+        public static function install(array $input): void
+        {
+            throw new \RuntimeException('Enter a valid MySQL port.', 422);
+        }
+    }
+}
+
 namespace {
-    use App\Controllers\{DeckController, PageController, StudyController};
+    use App\Controllers\{DeckController, InstallController, PageController, StudyController};
     use BrainLoop\Tests\{AbortSignal, Harness, RedirectSignal};
 
     if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
@@ -121,6 +133,9 @@ namespace {
     require __DIR__ . '/../app/controllers/DeckController.php';
     require __DIR__ . '/../app/controllers/PageController.php';
     require __DIR__ . '/../app/controllers/StudyController.php';
+    require __DIR__ . '/../app/controllers/InstallController.php';
+    require __DIR__ . '/../app/core/urls.php';
+    require __DIR__ . '/../app/views/partials/icons.php';
 
     set_error_handler(static function (int $severity, string $message, string $file, int $line): never {
         throw new ErrorException($message, 0, $severity, $file, $line);
@@ -387,6 +402,42 @@ namespace {
         (new DeckController())->import(7);
         same(true, isset(rendered('import')['errors']['csv']));
         same([], Harness::$store->imports);
+    });
+
+    runCase('setup errors render an accessible alert and retain no administrator password', static function (): void {
+        Harness::reset();
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = ['host' => '127.0.0.1', 'port' => '0', 'name' => 'practice', 'admin_user' => 'root', 'admin_password' => 'synthetic-only'];
+        InstallController::show();
+        $data = rendered('install');
+        same(422, Harness::$renders[0]['status']);
+        same('Enter a valid MySQL port.', $data['errors']['_form']);
+        same(false, array_key_exists('admin_password', $data['old']));
+        $GLOBALS['form_old'] = $data['old'];
+        $GLOBALS['form_errors'] = $data['errors'];
+        $errors = $data['errors'];
+        $page = 'install';
+        $title = $data['title'];
+        $user = null;
+        $path = '/setup';
+        $flashes = [];
+        ob_start();
+        try {
+            require __DIR__ . '/../app/views/pages/install.php';
+            $content = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+        ob_start();
+        try {
+            require __DIR__ . '/../app/views/layouts/main.php';
+            $html = ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
+        same(1, substr_count($html, 'role="alert"'));
+        same(true, str_contains($html, 'Enter a valid MySQL port.'));
+        same(false, str_contains($html, 'synthetic-only'));
     });
 
     echo $passed . ' passed, ' . $failed . ' failed.' . PHP_EOL;

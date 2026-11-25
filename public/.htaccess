@@ -1,0 +1,13 @@
+Options -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+# In a whole-folder htdocs install, this directory is internal. Its assets are
+# exposed through /assets; a direct /public/... URL must not create a second app.
+RewriteCond %{THE_REQUEST} "\s/+([^?\s]+/)*public(?:/|[?\s])" [NC]
+RewriteRule ^ - [F,END]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

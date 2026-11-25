@@ -33,7 +33,7 @@ No institution, course, instructor, or academic affiliation is implied.
 
 ## Windows quick start
 
-For a fresh computer, extract the supplied `BrainLoop-XAMPP.zip` and use the **BrainLoop** folder inside it. The clean package excludes private database credentials and runtime data, so setup can create settings for that computer. An already configured folder reuses its existing `app/config.local.php`; copying that folder alone does not copy the MySQL database. Use the backup/restore instructions below when transferring existing study data.
+For a fresh computer, prepare a clean **BrainLoop** source copy with `index.php`, `.htaccess`, `app/`, `public/`, `database/` and `scripts/`. Exclude environment-specific `app/config.local.php` and runtime `storage/` files from that new copy, then use the examples and your own local connection settings. An already configured folder reuses its existing `app/config.local.php`; copying that folder alone does not copy the MySQL database. Use the backup/restore instructions below when transferring existing study data.
 
 1. Copy the complete **BrainLoop** folder directly into `C:\xampp\htdocs\BrainLoop`. Its root must contain `index.php`, `.htaccess`, `app`, and `public`; do not create a second nested BrainLoop folder.
 2. Start **Apache** and **MySQL** in the XAMPP Control Panel. XAMPP's MySQL button may run MariaDB, which is supported.
@@ -49,7 +49,7 @@ Private database connection settings are kept in the ignored `app/config.local.p
 
 ### Optional command-line setup
 
-The browser setup is available only for a fresh local installation. The equivalent CLI setup creates the `brainloop` database and a dedicated database user with a random password, then writes private configuration without printing the password. It does not create a default BrainLoop login account. In PowerShell:
+The browser setup is available only for a fresh local installation. For command-line setup, first create a scoped database account and supply the private connection settings described below, then initialize the schema. This command creates no default learning account. In PowerShell:
 
 ```powershell
 cd "C:\xampp\htdocs\BrainLoop"
@@ -57,7 +57,6 @@ $env:Path = "C:\xampp\php;" + $env:Path
 php -v
 php --ini
 php -m
-php scripts/setup-xampp.php
 php scripts/setup.php
 ```
 
@@ -82,11 +81,11 @@ For the optional PHP development-server alternative, run from either the origina
 & "C:\xampp\php\php.exe" -S localhost:8000 -t public public/router.php
 ```
 
-Open [http://localhost:8000](http://localhost:8000) for that alternative and stop it with **Ctrl+C**. The PHP built-in server is for development, not production. Stop Apache/MySQL through the XAMPP Control Panel when they are no longer needed. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for hosting details.
+Open [http://localhost:8000](http://localhost:8000) for that alternative and stop it with **Ctrl+C**. The PHP built-in server is for development, not production. Stop Apache/MySQL through the XAMPP Control Panel when they are no longer needed. See [MySQL connection settings](#mysql-connection-settings) for hosting details.
 
-`scripts/setup-xampp.php` uses the local XAMPP administrator connection (`root` with an empty password by default). If your local database administrator has different credentials, supply `BRAINLOOP_ADMIN_DB_USER` and `BRAINLOOP_ADMIN_DB_PASSWORD` privately before running it. It preserves an existing local configuration instead of replacing credentials. The normal application uses only the newly scoped database identity, not the administrator.
+The XAMPP provisioning helper and optional Apache virtual-host script are outside this source restoration. Use the local browser setup or the manual database configuration below.
 
-The optional `scripts/setup-apache.ps1` is only for a separate [http://brainloop.localhost](http://brainloop.localhost) virtual host pointing to `public/`; the normal `/BrainLoop/` installation does not need it. It defaults to `C:\xampp` (override with `-XamppPath`), backs up the virtual-host configuration, validates changes, and rolls back if validation fails. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 
 ### MySQL connection settings
 
@@ -141,7 +140,6 @@ The driver list must include `mysql`. Restart Apache and any running PHP develop
 
 ## Troubleshooting local setup
 
-**Checkout status (November 26, 2026):** the tracked source still needs its `public/` entry point/assets, MySQL schema and HTTP harness restored before the installation steps below can run. The available `php tests/controllers.php` and `php tests/scheduler.php` checks run independently; see [actual verification](docs/VERIFICATION.md).
 
 
 Run the read-only diagnostic from the project folder:
@@ -161,7 +159,7 @@ It reports PHP/PDO availability, database server version, UTC/utf8mb4 connection
 | HTTP 403 | Keep the project root `.htaccess` intact and enable Apache `mod_rewrite` / overrides. Open `/BrainLoop/`, not a private path such as `/BrainLoop/app/` or `/BrainLoop/public/`. Private paths should remain forbidden. |
 | HTTP 404 or broken links/assets | Confirm `C:\xampp\htdocs\BrainLoop\index.php` exists and there is no extra nested folder. Use the actual folder name in the URL. The application detects its folder prefix automatically. |
 | HTTP 500 | Read XAMPP Apache/PHP logs privately and run `scripts/diagnose.php`. Verify MySQL is running, credentials are valid, the six tables exist, and the supported database version is installed. Do not publish credentials or full private logs. |
-| Setup appears again after copying | The installed copy needs its own existing private configuration. Preserve `app/config.local.php` when updating the same installation; a fresh source archive intentionally contains no real password. |
+| Setup appears again after copying | The installed copy needs its own existing private configuration. Preserve `app/config.local.php` when updating the same installation; For a fresh source copy, supply your own settings or run local setup; keep environment-specific credentials private. |
 
 If MySQL logs report storage-engine/checksum corruption, preserve a backup and ask the database administrator to investigate. Application setup does not repair MySQL system tables, and deleting the MySQL data directory can destroy existing databases.
 
@@ -183,7 +181,7 @@ Use your actual database name, port, and authorized backup account. Do not put t
 
 Test a restore by creating a **new** database such as `brainloop_restore` in phpMyAdmin and importing the dump into it. Point a separate test copy's private configuration at that database with a scoped account, then check login, deck/card ownership, review history, due dates, and analytics. Keep the current installation unchanged until the restore is verified.
 
-When updating source, preserve the installed `app/config.local.php` and private storage files. Do not replace someone else's data with demo content. For production, use HTTPS, restrict the application account to its database, keep private paths inaccessible, and follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+When updating source, preserve the installed `app/config.local.php` and private storage files. Do not replace someone else's data with demo content. For production, use HTTPS, restrict the application account to its database, keep private paths inaccessible, and follow [MySQL connection settings](#mysql-connection-settings).
 
 ## Optional sample flashcards
 
@@ -244,57 +242,29 @@ Deck progress is an operational indicator: a card is counted as established when
 
 ## Tests and verification
 
-Run the dependency-free scheduler, database, model, analytics, and security-helper tests:
+Run the dependency-free controller and scheduler checks with PHP 8.2 or newer:
 
 ```powershell
-php tests/run.php
-php tests/http.php
+php tests/controllers.php
+php tests/scheduler.php
 ```
 
-Tests use MySQL/MariaDB and require the server to be running. Supply a test administrator identity allowed to create/drop isolated databases and temporary accounts:
+The HTTP suite uses a fresh MySQL/MariaDB schema and temporary scoped account. Supply a test administrator allowed to create and drop those temporary resources:
 
 ```powershell
 $env:BRAINLOOP_TEST_DB_HOST = "127.0.0.1"
 $env:BRAINLOOP_TEST_DB_PORT = "3306"
 $env:BRAINLOOP_TEST_DB_USER = "root"
-# Supply BRAINLOOP_TEST_DB_PASSWORD if that test identity has a password.
-php tests/run.php
+# Supply BRAINLOOP_TEST_DB_PASSWORD privately if required.
 php tests/http.php
 php tests/http.php --subdirectory
 ```
 
-MySQL tests create randomly named `brainloop_test_...` databases and random scoped test users, then drop only the databases/users they created. They never use the configured `brainloop` application database. Test administrator credentials need permission to create/drop those databases and users; the normal application account does not. The HTTP suite launches/stops its own localhost PHP server and requires CLI `proc_open`, `allow_url_fopen`, and DOM. `--subdirectory` runs the same forms and study workflow through the root entry point mounted at `/BrainLoop/`, including checks that links and redirects retain that path. A nonzero exit code indicates failure.
+The runner starts its own loopback PHP server, isolates its session directory, verifies the selected test connection before use, and removes its generated database/account/session resources. It needs CLI `proc_open`, `allow_url_fopen`, PDO MySQL and DOM. The mounted run checks the same forms and study workflow through `/BrainLoop/`.
 
-To run only deterministic scheduling, input/output, and URL unit checks without connecting to a database:
+Check syntax for the root entry point and every PHP file under `app`, `public`, `scripts` and `tests`. The `PHP checks` workflow runs syntax, controller, scheduler and both HTTP suites on PHP 8.2, 8.3 and 8.4 with a MariaDB service.
 
-```powershell
-php tests/run.php --unit-only
-```
-
-This explicitly reports database integration as not requested. A passing unit-only run does not mean the database/HTTP suites passed. Current dated results and environment limitations are recorded in [docs/VERIFICATION.md](docs/VERIFICATION.md).
-
-For an optional check against **real XAMPP Apache and MySQL**, start those services first and run:
-
-```powershell
-php tests/apache-copy.php
-```
-
-This creates a disposable fresh project copy in XAMPP `htdocs`, exercises browser-based database setup and the full study flow over HTTP, and removes its own copy/database/generated user afterward. It preserves existing installed data. The default XAMPP path is `C:\xampp`; override it with `BRAINLOOP_TEST_XAMPP_PATH` if needed. Local database administrator settings use `BRAINLOOP_TEST_DB_USER`, `BRAINLOOP_TEST_DB_PASSWORD`, and `BRAINLOOP_TEST_DB_PORT`. This optional test requires an already running local Apache/MySQL installation and is not part of GitHub CI.
-
-Check all PHP source files with PowerShell:
-
-```powershell
-php -l index.php
-if ($LASTEXITCODE -ne 0) { throw "Root entry point syntax check failed." }
-Get-ChildItem app, public, scripts, tests -Recurse -Filter *.php | ForEach-Object {
-    php -l $_.FullName
-    if ($LASTEXITCODE -ne 0) { throw "PHP syntax check failed: $($_.FullName)" }
-}
-```
-
-GitHub Actions verifies extensions, PHP syntax, and MySQL/MariaDB tests at both hostname root and a mounted `/BrainLoop/` path on PHP 8.2, 8.3, and 8.4 using an isolated MariaDB service. See [docs/TESTING.md](docs/TESTING.md) for functional and responsive QA and screenshot instructions. Only checks actually executed should be reported as passed.
-
-Local results and their database/runtime scope are recorded in [docs/VERIFICATION.md](docs/VERIFICATION.md). Screenshots of the interface are available locally in `docs/screenshots/`.
+The broader `tests/run.php` model runner and optional `tests/apache-copy.php` fixture are still unavailable. This restoration verifies MySQL/MariaDB; the legacy optional SQLite code has no restored schema or integration coverage. Deployment/testing guides and screenshots linked elsewhere in this README are also pending restoration. See [actual verification and remaining work](docs/VERIFICATION.md).
 
 ## Configuration
 
@@ -341,7 +311,7 @@ No repository URL is assumed, and no remote or push is created automatically. Gi
 
 For XAMPP's drop-in `/BrainLoop/` layout, keep the supplied root `.htaccess` enabled: it routes application requests and blocks private application/configuration/storage paths. For a dedicated production host, prefer setting the document root directly to `public/` so private source is outside that web root. Grant the application database account access only to its own database. Enable HTTPS, set production PHP error logging without public error display, and apply current PHP security updates.
 
-Use Apache with `mod_rewrite` and the supplied `public/.htaccess`, or configure Nginx to send application routes to `public/index.php`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for XAMPP Apache configuration, database privileges, backups, HTTPS termination, and portability limits.
+Use Apache with `mod_rewrite` and the supplied `public/.htaccess`, or configure Nginx to send application routes to `public/index.php`. See [MySQL connection settings](#mysql-connection-settings) for XAMPP Apache configuration, database privileges, backups, HTTPS termination, and portability limits.
 
 Security safeguards include hashed passwords, login throttling, session regeneration, HttpOnly/SameSite cookies, CSRF tokens, prepared SQL, output escaping, ownership checks, POST-only mutation, and duplicate review prevention. See [SECURITY.md](SECURITY.md) for responsible reporting. The project does not simulate email delivery, email verification, or password-reset emails.
 
