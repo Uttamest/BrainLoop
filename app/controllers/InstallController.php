@@ -1,4 +1,3 @@
-
 <?php
 
 declare(strict_types=1);
@@ -8,95 +7,122 @@ namespace App\Controllers;
 use App\Services\LocalInstaller;
 use RuntimeException;
 
+/**
+ * Handles first-run local environment provisioning and database setup.
+ */
 final class InstallController
 {
-    /**
-     * Supported HTTP error status codes.
-     */
-    private const ERROR_STATUS_CODES = [403, 409, 422, 503];
+    private const HTTP_OK                    = 200;
+    private const HTTP_FORBIDDEN             = 403;
+    private const HTTP_CONFLICT              = 409;
+    private const HTTP_UNPROCESSABLE_ENTITY  = 422;
+    private const HTTP_SERVICE_UNAVAILABLE   = 503;
+
+    /** @var list<int> */
+    private const ALLOWED_ERROR_STATUS_CODES = [
+        self::HTTP_FORBIDDEN,
+        self::HTTP_CONFLICT,
+        self::HTTP_UNPROCESSABLE_ENTITY,
+        self::HTTP_SERVICE_UNAVAILABLE,
+    ];
+
+    /** @var list<string> */
+    private const RETAINED_FORM_FIELDS = [
+        'host',
+        'port',
+        'name',
+        'admin_user',
+    ];
 
     /**
-     * Display and process the BrainLoop installation form.
+     * Render and process the first-time installation wizard.
      */
     public static function show(): void
     {
-        // Restrict first-time installation to local requests.
-        if (!LocalInstaller::isLocalRequest()) {
-            abort_request(
-                403,
-                'For security reasons, first-time setup is only available from this computer.'
-            );
-            return;
-        }
+        self::assertLocalEnvironment();
 
         $errors = [];
-        $old = [];
-        $status = 200;
+        $old    = [];
+        $status = self::HTTP_OK;
 
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $old = self::getFormData();
+        if (self::isPostRequest()) {
+            $old = self::extractRetainedInput();
 
             try {
-                LocalInstaller::install(
-                    $old + [
-                        'admin_password' => input_password('admin_password'),
-                    ]
-                );
+                LocalInstaller::install(self::buildInstallationPayload($old));
 
-                flash(
-                    'BrainLoop has been successfully configured. Create your learning account to get started.'
-                );
-
+                flash('BrainLoop has been successfully configured. Create your learning account to get started.');
                 redirect('/register');
-                return;
-
             } catch (RuntimeException $exception) {
                 $errors['_form'] = $exception->getMessage();
-
-                $status = self::resolveErrorStatus($exception);
+                $status          = self::resolveHttpErrorStatus($exception);
             }
         }
 
-        render(
-            'install',
-            [
-                'title'  => 'BrainLoop | Initial Setup',
-                'user'   => null,
-                'errors' => $errors,
-                'old'    => $old,
-            ],
-            $status
-        );
+        render('install', [
+            'title'  => 'BrainLoop | Initial Setup',
+            'user'   => null,
+            'errors' => $errors,
+            'old'    => $old,
+        ], $status);
     }
 
     /**
-     * Collect installation form values.
-     *
-     * Passwords are intentionally excluded from retained form data.
+     * Ensure setup requests originate strictly from the local machine.
+     */
+    private static function assertLocalEnvironment(): void
+    {
+        if (!LocalInstaller::isLocalRequest()) {
+            abort_request(
+                self::HTTP_FORBIDDEN,
+                'For security reasons, first-time setup is only available from this computer.'
+            );
+        }
+    }
+
+    private static function isPostRequest(): bool
+    {
+        return ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
+    }
+
+    /**
+     * Collect non-sensitive form fields to re-populate inputs on validation errors.
      *
      * @return array<string, string>
      */
-    private static function getFormData(): array
+    private static function extractRetainedInput(): array
     {
-        $data = [];
+        $input = [];
 
-        foreach (['host', 'port', 'name', 'admin_user'] as $field) {
-            $data[$field] = input_text($field);
+        foreach (self::RETAINED_FORM_FIELDS as $field) {
+            $input[$field] = input_text($field);
         }
 
-        return $data;
+        return $input;
     }
 
     /**
-     * Resolve the appropriate HTTP response status.
+     * Merge retained text fields with sensitive credentials without persisting passwords in view state.
+     *
+     * @param array<string, string> $retainedInput
+     * @return array<string, string>
      */
-    private static function resolveErrorStatus(
-        RuntimeException $exception
-    ): int {
-        $code = $exception->getCode();
+    private static function buildInstallationPayload(array $retainedInput): array
+    {
+        return $retainedInput + [
+            'admin_password' => input_password('admin_password'),
+        ];
+    }
 
-        return in_array($code, self::ERROR_STATUS_CODES, true)
+    /**
+     * Map installer exception codes to safe, supported HTTP error status codes.
+     */
+    private static function resolveHttpErrorStatus(RuntimeException $exception): int
+    {
+        $code = (int) $exception->getCode();
+
+        return in_array($code, self::ALLOWED_ERROR_STATUS_CODES, true)
             ? $code
-            : 422;
+            : self::HTTP_UNPROCESSABLE_ENTITY;
     }
 }
