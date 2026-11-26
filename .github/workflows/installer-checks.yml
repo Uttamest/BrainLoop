@@ -1,0 +1,30 @@
+name: Installer checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
+      - name: Check installer and test dependency syntax
+        run: |
+          for file in app/controllers/InstallController.php app/core/helpers.php app/core/urls.php app/views/partials/icons.php app/views/pages/install.php app/views/layouts/main.php tests/install-controller.php; do
+            php -l "$file" || exit 1
+          done
+      - name: Check installer controller and shared view behavior
+        run: php tests/install-controller.php

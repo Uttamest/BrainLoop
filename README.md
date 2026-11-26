@@ -241,6 +241,8 @@ Deck progress is an operational indicator: a card is counted as established when
 
 ## Tests and verification
 
+The focused installer checks are available in this checkout. Run `php tests/install-controller.php` to verify the current installation controller and shared form layout with synthetic provisioning dependencies. They require PHP 8.2+ and no database. The `Installer checks` workflow runs this suite and its dependency syntax checks on PHP 8.2, 8.3 and 8.4. See [November 27 verification and current application blockers](docs/VERIFICATION.md) for the scope of these results. The broader runners referenced below remain unavailable in the current main source.
+
 Run the dependency-free scheduler, database, model, analytics, and security-helper tests:
 
 ```powershell
