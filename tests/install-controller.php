@@ -100,17 +100,18 @@ namespace {
     }
 
     $passed = $failed = 0;
+    $report = [];
     function check(string $name, Closure $action): void
     {
-        global $passed, $failed;
+        global $passed, $failed, $report;
         InstallationHarness::reset();
         try {
             $action();
             ++$passed;
-            echo 'PASS ' . $name . PHP_EOL;
+            $report[] = 'PASS ' . $name;
         } catch (Throwable $error) {
             ++$failed;
-            echo 'FAIL ' . $name . ': ' . $error->getMessage() . PHP_EOL;
+            $report[] = 'FAIL ' . $name . ': ' . $error->getMessage();
         }
     }
 
@@ -250,6 +251,7 @@ namespace {
         } finally {
             ob_end_clean();
         }
+        same(422, http_response_code());
         same(1, substr_count($html, 'role="alert"'));
         same(true, str_contains($html, 'Check &lt;local&gt; &amp; retry.'));
         same(true, str_contains($html, 'value="3307"'));
@@ -260,6 +262,8 @@ namespace {
         same(0, preg_match('~<script\b~i', $html));
     });
 
+    // Emit the report after rendering so PHP can set response headers in every supported version.
+    echo implode(PHP_EOL, $report) . PHP_EOL;
     echo $passed . ' passed, ' . $failed . ' failed.' . PHP_EOL;
     exit($failed === 0 ? 0 : 1);
 }

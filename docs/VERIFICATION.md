@@ -16,6 +16,8 @@ The tests execute the real `InstallController`, shared input helpers, installati
 
 All seven installer/test dependency syntax checks passed, and `git diff --check` passed. The `Installer checks` workflow runs these same scoped checks on PHP 8.2, 8.3 and 8.4. CI outcomes are recorded separately on the pull request. Production PHP and presentation files are unchanged by this increment.
 
+The [first CI matrix](https://github.com/Uttamest/BrainLoop/actions/runs/45855225114) passed PHP 8.2 and exposed a runner-output issue on PHP 8.3/8.4. Earlier PASS messages had already sent output before the real renderer set its response code. The runner now prints its report after all cases and also asserts the rendered 422 status. All 11 cases pass locally with output buffering disabled. The follow-up commit receives a fresh matrix run.
+
 ## Remaining application checks
 
 A separate syntax scan of 44 existing public-source PHP files found one existing failure in `app/controllers/DeckController.php`. The current main source also lacks the `public/` entry point/assets, database schema and broader `tests/run.php`/`tests/http.php` runners referenced in README. Full application syntax, HTTP/database integration and browser flows therefore remain blocked. The controller suite does not establish actual database provisioning, request middleware, sessions, routing or accessibility conformance.
