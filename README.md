@@ -351,6 +351,7 @@ The planned project timeline runs from **15 September to 8 December 2026**, with
 - [Team contributions](docs/TEAM_CONTRIBUTIONS.md), based on the contribution areas confirmed by the team.
 - [Lecture mapping and page references](docs/LECTURE_MAPPING.md), connecting the implementation and plan to all nine supplied lecture PDFs.
 - [Dated verification record](docs/VERIFICATION.md) and [local MySQL recovery note](docs/MYSQL_RECOVERY_NOTE.md).
+- [Dashboard and analytics controller checks](docs/PAGE_CONTROLLER_CHECKS.md): available scoped command, November 28 evidence and current full-application verification limits.
 
 The PDF and Markdown files are opened from the project folder. Apache deliberately blocks `/docs/` requests to keep internal project documents outside the public website.
 
